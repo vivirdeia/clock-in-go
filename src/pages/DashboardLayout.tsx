@@ -37,9 +37,9 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-secondary/30">
+    <div className="flex min-h-screen w-full bg-secondary/30 overflow-x-hidden">
       <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         {/* Header */}
         <header className="h-14 md:h-16 bg-background border-b flex items-center justify-between px-3 md:px-6 sticky top-0 z-40">
           <div className="flex items-center gap-2 text-sm">
