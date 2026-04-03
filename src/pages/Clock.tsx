@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Clock, Fingerprint, Check, LogOut } from 'lucide-react';
+import { Fingerprint, Check, LogOut } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { employees, getEmployee, getDepartment, getTodayRecords, formatTime } from '@/data/mockData';
 import { useAuth } from '@/store/AuthContext';
 
