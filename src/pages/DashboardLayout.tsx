@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import AnimatedOutlet from '@/components/AnimatedOutlet';
 import { Bell, Search, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
@@ -80,7 +81,7 @@ export default function DashboardLayout() {
         </header>
         {/* Content */}
         <main className="flex-1 p-3 md:p-6">
-          <Outlet />
+          <AnimatedOutlet />
         </main>
       </div>
     </div>
