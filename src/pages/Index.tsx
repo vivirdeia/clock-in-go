@@ -184,7 +184,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <Button size="lg" className="rounded-full text-base gap-2 gradient-primary border-0 text-primary-foreground" asChild>
-              <Link to="/clock">Empezar gratis <ArrowRight className="w-4 h-4" /></Link>
+              <Link to="/register">Empezar gratis <ArrowRight className="w-4 h-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" className="rounded-full text-base" asChild>
               <a href="#demo">Ver demo</a>
