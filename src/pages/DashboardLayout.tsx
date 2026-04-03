@@ -81,7 +81,7 @@ export default function DashboardLayout() {
         </header>
         {/* Content */}
         <main className="flex-1 p-3 md:p-6">
-          <Outlet />
+          <AnimatedOutlet />
         </main>
       </div>
     </div>
