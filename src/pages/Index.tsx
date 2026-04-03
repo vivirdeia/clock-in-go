@@ -154,8 +154,8 @@ const LandingPage = () => {
             <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Testimonios</a>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" className="rounded-full" size="sm" asChild><Link to="/dashboard">Iniciar sesión</Link></Button>
-            <Button className="rounded-full" size="sm" asChild><Link to="/clock">Empezar gratis</Link></Button>
+            <Button variant="outline" className="rounded-full" size="sm" asChild><Link to="/login">Iniciar sesión</Link></Button>
+            <Button className="rounded-full" size="sm" asChild><Link to="/register">Empezar gratis</Link></Button>
           </div>
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
