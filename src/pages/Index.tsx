@@ -146,7 +146,7 @@ const LandingPage = () => {
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <Clock className="w-5 h-5" />CLOCKIN
+            <LogoIcon className="w-5 h-5" />CLOCKIN
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Características</a>
