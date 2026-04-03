@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Clock, Fingerprint, Check } from 'lucide-react';
+import { Clock, Fingerprint, Check, LogOut } from 'lucide-react';
 import { employees, getEmployee, getDepartment, getTodayRecords, formatTime } from '@/data/mockData';
+import { useAuth } from '@/store/AuthContext';
 
 // ==================== PIN SCREEN ====================
 function PinScreen({ onSuccess }: { onSuccess: (empId: string) => void }) {
