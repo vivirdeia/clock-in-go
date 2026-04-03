@@ -208,8 +208,35 @@ function ClockScreen({ employeeId }: { employeeId: string }) {
 
 // ==================== MAIN CLOCK PAGE ====================
 export default function ClockPage() {
-  const [employeeId, setEmployeeId] = useState<string | null>(() => localStorage.getItem('clockin_employee'));
+  const { user, loginEmployee, logout } = useAuth();
+  const [employeeId, setEmployeeId] = useState<string | null>(() => {
+    // If already logged in as employee via auth
+    if (user?.role === 'employee' && user.employeeId) return user.employeeId;
+    return localStorage.getItem('clockin_employee');
+  });
 
-  if (!employeeId) return <PinScreen onSuccess={setEmployeeId} />;
-  return <ClockScreen employeeId={employeeId} />;
+  const handlePinSuccess = (empId: string) => {
+    loginEmployee(employees.find(e => e.id === empId)?.pin || '');
+    setEmployeeId(empId);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setEmployeeId(null);
+    localStorage.removeItem('clockin_employee');
+  };
+
+  if (!employeeId) return <PinScreen onSuccess={handlePinSuccess} />;
+  return (
+    <div className="relative">
+      <button
+        onClick={handleLogout}
+        className="absolute top-4 right-4 z-10 p-2 rounded-full hover:bg-secondary transition-colors text-muted-foreground"
+        title="Cerrar sesión"
+      >
+        <LogOut className="w-5 h-5" />
+      </button>
+      <ClockScreen employeeId={employeeId} />
+    </div>
+  );
 }

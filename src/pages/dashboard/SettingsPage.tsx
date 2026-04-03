@@ -127,18 +127,39 @@ export default function SettingsPage() {
           <h3 className="font-bold">Facturación</h3>
           <div className="bg-secondary rounded-lg p-4">
             <div className="flex items-center gap-3 mb-2">
-              <Badge>BUSINESS</Badge>
-              <span className="text-2xl font-bold">€29<span className="text-sm font-normal text-muted-foreground">/mes</span></span>
+              <Badge>{(user?.plan || 'starter').toUpperCase()}</Badge>
+              <span className="text-2xl font-bold">
+                €{user?.plan === 'enterprise' ? 59 : user?.plan === 'business' ? 29 : 0}
+                <span className="text-sm font-normal text-muted-foreground">/mes</span>
+              </span>
             </div>
-            <p className="text-sm text-muted-foreground">Hasta 25 empleados · 22 en uso</p>
+            <p className="text-sm text-muted-foreground">
+              {user?.plan === 'enterprise' ? 'Hasta 100' : user?.plan === 'business' ? 'Hasta 25' : 'Hasta 5'} empleados · 22 en uso
+            </p>
           </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Próxima factura</span><span>1 abril 2025 — €29.00</span></div>
-            <div className="flex justify-between py-2 border-b"><span className="text-muted-foreground">Método de pago</span><span>Visa ****4242</span></div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => toast.info('Conecta Stripe para gestionar tu suscripción')}>Cambiar plan</Button>
-            <Button variant="ghost" className="text-destructive" onClick={() => toast.info('Conecta Stripe para cancelar')}>Cancelar</Button>
+          <h4 className="font-medium text-sm mt-2">Cambiar plan</h4>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {([
+              { key: 'starter' as PlanType, name: 'Starter', price: 0, desc: 'Hasta 5 empleados' },
+              { key: 'business' as PlanType, name: 'Business', price: 29, desc: 'Hasta 25 empleados' },
+              { key: 'enterprise' as PlanType, name: 'Enterprise', price: 59, desc: 'Hasta 100 empleados' },
+            ]).map(plan => (
+              <button
+                key={plan.key}
+                onClick={() => {
+                  updatePlan(plan.key);
+                  toast.success(`Plan cambiado a ${plan.name}`);
+                }}
+                className={`rounded-lg border p-4 text-left transition-colors ${user?.plan === plan.key ? 'border-foreground bg-secondary' : 'hover:bg-secondary/50'}`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium text-sm">{plan.name}</span>
+                  {user?.plan === plan.key && <Check className="w-4 h-4" />}
+                </div>
+                <p className="text-lg font-bold">€{plan.price}<span className="text-xs font-normal text-muted-foreground">/mes</span></p>
+                <p className="text-xs text-muted-foreground">{plan.desc}</p>
+              </button>
+            ))}
           </div>
           <h4 className="font-medium text-sm mt-4">Historial de facturas</h4>
           {['Marzo 2025 — €29.00 — Pagada', 'Febrero 2025 — €29.00 — Pagada', 'Enero 2025 — €29.00 — Pagada'].map(f => (

@@ -369,7 +369,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-3">Tu equipo ficha mañana con ClockIn</h2>
           <p className="opacity-80 mb-8 text-lg">10 minutos de setup. Gratis para siempre hasta 5 empleados.</p>
           <Button size="lg" className="rounded-full text-base gap-2 bg-success hover:bg-success/90 text-success-foreground border-0" asChild>
-            <Link to="/clock">Crear mi cuenta gratis <ArrowRight className="w-4 h-4" /></Link>
+            <Link to="/register">Crear mi cuenta gratis <ArrowRight className="w-4 h-4" /></Link>
           </Button>
           <p className="mt-6 text-sm opacity-60">2,100+ empresas · 24,000+ empleados · 0 hardware necesario</p>
         </div>
