@@ -156,7 +156,7 @@ function ClockScreen({ employeeId }: { employeeId: string }) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-between p-6 select-none">
       {/* Logo */}
       <div className="flex items-center gap-2 text-muted-foreground pt-4">
-        <Clock className="w-4 h-4" />
+        <LogoIcon className="w-4 h-4" />
         <span className="font-bold text-sm tracking-wider">CLOCKIN</span>
       </div>
 
