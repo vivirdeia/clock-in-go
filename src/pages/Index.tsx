@@ -381,7 +381,7 @@ const LandingPage = () => {
         <div className="container">
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-10">
             <div>
-              <div className="flex items-center gap-2 font-bold text-lg mb-4"><Clock className="w-5 h-5" />CLOCKIN</div>
+              <div className="flex items-center gap-2 font-bold text-lg mb-4"><LogoIcon className="w-5 h-5" />CLOCKIN</div>
               <p className="text-sm text-muted-foreground">Fichaje con GPS para PYMEs. Simple, legal y sin hardware.</p>
             </div>
             {[
