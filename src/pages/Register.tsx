@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, User, Mail, Lock, Building2, FileText } from 'lucide-react';
+import { User, Mail, Lock, Building2, FileText } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/store/AuthContext';
