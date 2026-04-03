@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Clock, LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Badge } from '@/components/ui/badge';
 import { alerts } from '@/data/mockData';
 import { useAuth } from '@/store/AuthContext';

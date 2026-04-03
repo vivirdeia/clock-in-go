@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, Mail, Lock, KeyRound } from 'lucide-react';
+import { Mail, Lock, KeyRound } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

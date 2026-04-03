@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth, PlanType } from '@/store/AuthContext';

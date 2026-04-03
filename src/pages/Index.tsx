@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, MapPin, ShieldCheck, Target, LayoutDashboard, Download, Smartphone, Fingerprint, ArrowRight, Star, Check, ChevronDown, Menu, X } from 'lucide-react';
+import { MapPin, ShieldCheck, Target, LayoutDashboard, Download, Smartphone, Fingerprint, ArrowRight, Star, Check, ChevronDown, Menu, X } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
