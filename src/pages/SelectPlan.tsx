@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Check, ArrowRight } from 'lucide-react';
+import { Check, ArrowRight } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth, PlanType } from '@/store/AuthContext';
@@ -46,7 +47,7 @@ export default function SelectPlanPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center p-6">
       <div className="flex items-center gap-2 font-bold text-lg mt-8 mb-10">
-        <Clock className="w-5 h-5" />CLOCKIN
+        <LogoIcon className="w-5 h-5" />CLOCKIN
       </div>
 
       <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Elige tu plan</h1>

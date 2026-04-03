@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Clock, LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Badge } from '@/components/ui/badge';
 import { alerts } from '@/data/mockData';
 import { useAuth } from '@/store/AuthContext';
@@ -44,7 +45,7 @@ export default function AdminSidebar({ collapsed, setCollapsed, mobileOpen, setM
     <>
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b gap-2">
-        <Clock className="w-5 h-5 flex-shrink-0" />
+        <LogoIcon className="w-5 h-5 flex-shrink-0" />
         {(!collapsed || mobileOpen) && <span className="font-bold text-lg">CLOCKIN</span>}
         {mobileOpen && (
           <button onClick={() => setMobileOpen(false)} className="ml-auto md:hidden p-1">
