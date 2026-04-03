@@ -30,7 +30,7 @@ function PinScreen({ onSuccess }: { onSuccess: (empId: string) => void }) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <div className="flex items-center gap-2 text-muted-foreground mb-12">
-        <Clock className="w-5 h-5" />
+        <LogoIcon className="w-5 h-5" />
         <span className="font-bold">CLOCKIN</span>
       </div>
       <h2 className="text-xl font-bold mb-8">Introduce tu PIN</h2>
