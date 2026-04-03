@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { Clock, Fingerprint, Check, LogOut } from 'lucide-react';
+import { Fingerprint, Check, LogOut } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { employees, getEmployee, getDepartment, getTodayRecords, formatTime } from '@/data/mockData';
 import { useAuth } from '@/store/AuthContext';
 
@@ -29,7 +30,7 @@ function PinScreen({ onSuccess }: { onSuccess: (empId: string) => void }) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <div className="flex items-center gap-2 text-muted-foreground mb-12">
-        <Clock className="w-5 h-5" />
+        <LogoIcon className="w-5 h-5" />
         <span className="font-bold">CLOCKIN</span>
       </div>
       <h2 className="text-xl font-bold mb-8">Introduce tu PIN</h2>
@@ -155,7 +156,7 @@ function ClockScreen({ employeeId }: { employeeId: string }) {
     <div className="min-h-screen bg-background flex flex-col items-center justify-between p-6 select-none">
       {/* Logo */}
       <div className="flex items-center gap-2 text-muted-foreground pt-4">
-        <Clock className="w-4 h-4" />
+        <LogoIcon className="w-4 h-4" />
         <span className="font-bold text-sm tracking-wider">CLOCKIN</span>
       </div>
 

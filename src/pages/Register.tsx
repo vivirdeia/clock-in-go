@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, User, Mail, Lock, Building2, FileText } from 'lucide-react';
+import { User, Mail, Lock, Building2, FileText } from 'lucide-react';
+import LogoIcon from '@/components/LogoIcon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/store/AuthContext';
@@ -42,7 +43,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <Link to="/" className="flex items-center gap-2 font-bold text-lg mb-10">
-        <Clock className="w-5 h-5" />CLOCKIN
+        <LogoIcon className="w-5 h-5" />CLOCKIN
       </Link>
 
       <div className="w-full max-w-sm">
