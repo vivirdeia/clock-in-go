@@ -120,11 +120,13 @@ export default function AlertsPage() {
           <DialogHeader><DialogTitle>Resolver alerta</DialogTitle></DialogHeader>
           <form onSubmit={(e) => {
             e.preventDefault();
-            setAlertsState(prev => prev.map(a => a.id === resolveId ? { ...a, status: 'resolved' as const, resolvedNote: 'Revisado y resuelto' } : a));
+            const form = e.target as HTMLFormElement;
+            const note = (form.elements.namedItem('note') as HTMLTextAreaElement)?.value || 'Revisado y resuelto';
+            setAlertsState(prev => prev.map(a => a.id === resolveId ? { ...a, status: 'resolved' as const, resolvedNote: note } : a));
             setResolveId(null);
             toast.success('Alerta resuelta');
           }} className="space-y-4">
-            <div><label className="text-sm font-medium">Nota de resolución</label><Textarea placeholder="Ej: Reunión justificada con cliente" /></div>
+            <div><label className="text-sm font-medium">Nota de resolución</label><Textarea name="note" placeholder="Ej: Reunión justificada con cliente" /></div>
             <Button type="submit" className="w-full">Resolver</Button>
           </form>
         </DialogContent>
