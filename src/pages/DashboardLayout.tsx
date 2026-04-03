@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import AnimatedOutlet from '@/components/AnimatedOutlet';
 import { Bell, Search, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
