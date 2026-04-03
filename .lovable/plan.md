@@ -1,29 +1,53 @@
 
 
-## Plan: Animación de feedback al pulsar el botón de fichaje
+## Plan: Hacer todos los botones funcionales con datos mock
 
 ### Problema
-Al tocar el botón verde, el usuario no percibe que algo está pasando. La escala 1.05x y el anillo SVG son demasiado sutiles. Falta feedback visual inmediato que comunique "mantén pulsado".
+Muchos botones en la app no hacen nada o solo muestran un toast falso. El usuario quiere que toda la interacción sea real usando datos mock en memoria (sin localStorage).
 
-### Solución
-Añadir múltiples capas de feedback visual durante la pulsación larga:
+### Cambios
 
-**Modificar `src/pages/Clock.tsx`** (líneas 170-186, el bloque del botón):
+**1. `src/pages/Index.tsx`** — Botones de pricing funcionales
+- Los 3 botones de planes (línea 126) no tienen navegación. Convertirlos en `<Link to="/register">` para que lleven al registro.
 
-1. **Icono Fingerprint pulsa y crece**: durante el progreso, el icono escala de 1x a 1.3x con una transición suave
-2. **Icono cambia de color**: el icono pasa de blanco a un blanco más brillante con glow/sombra
-3. **Botón pulsa más**: escala del botón de 1.05x a 1.1x durante la pulsación
-4. **Anillo de progreso más grueso y visible**: strokeWidth de 4 a 6, color blanco en vez de verde para contrastar con el fondo verde
-5. **Efecto de onda/ripple**: añadir un anillo exterior que se expande con opacidad decreciente mientras se mantiene pulsado (CSS animation)
-6. **Texto dinámico**: debajo del botón, mostrar "Manteniendo..." con puntos animados mientras `progress > 0` y no ha confirmado
+**2. `src/pages/dashboard/EmployeesPage.tsx`** — CRUD funcional en memoria
+- Convertir `employees` de importación estática a `useState([...employees])` local.
+- "Añadir empleado": el formulario crea un empleado real en el estado con PIN auto-generado y lo añade a la lista.
+- Click en empleado: permitir editar nombre, email, departamento, turno en el modal existente y actualizar el estado.
+- Añadir botón "Eliminar" con confirmación que remueve del estado.
 
-**Modificar `src/index.css`**:
-- Añadir keyframe `pulse-ring` para el efecto de onda expansiva alrededor del botón
-- Añadir keyframe `glow` para el brillo del icono durante la pulsación
+**3. `src/pages/dashboard/DepartmentsPage.tsx`** — CRUD funcional en memoria
+- Estado local con `useState([...departments])`.
+- "Nuevo departamento": crea de verdad y aparece en la lista.
+- Editar/eliminar departamentos funcional.
 
-### Resultado visual
-- Toque inicial: el botón crece, aparece ripple, el icono empieza a brillar, texto cambia a "Manteniendo..."
-- Durante pulsación: anillo de progreso se llena (más visible), icono crece progresivamente, ondas pulsantes
-- Al completar: vibración + sonido + check animado (ya existente)
-- Al soltar antes: todo se resetea suavemente
+**4. `src/pages/dashboard/GpsZonesPage.tsx`** — CRUD funcional en memoria
+- Estado local con `useState([...zones])`.
+- "Nueva zona": crea con los datos del formulario y aparece en la lista.
+- Toggle activa/inactiva funcional.
+- Eliminar zona.
+
+**5. `src/pages/dashboard/AlertsPage.tsx`** — Acciones funcionales
+- "Marcar leída" y "Resolver" ya modifican estado local — verificar que funcionen correctamente.
+
+**6. `src/pages/dashboard/ClockRecords.tsx`** — Exportar CSV real
+- El botón "Exportar CSV" genera un archivo `.csv` real con los datos mock y lo descarga usando `Blob` + `URL.createObjectURL`.
+
+**7. `src/pages/dashboard/ReportsPage.tsx`** — Exportación real
+- Los botones de "quick reports" y "Exportar CSV/PDF" generan descargas reales.
+- CSV: genera Blob con datos y descarga.
+- PDF: usa `window.print()` con CSS de impresión.
+
+**8. `src/pages/dashboard/SettingsPage.tsx`** — Formularios funcionales
+- Los formularios de configuración guardan en estado local (en memoria de sesión).
+- Botón "Nuevo turno" abre un mini-formulario funcional.
+- "Descargar plantilla PDF" genera descarga real.
+
+### Lo que NO cambia
+- No se usa localStorage para persistir datos.
+- Los datos se resetean al recargar la página (son mock en memoria).
+- No se crea ningún store global.
+
+### Resultado
+Cada botón visible en la app tiene una acción real: navega, crea, edita, elimina, o descarga. Nada queda como toast falso.
 
