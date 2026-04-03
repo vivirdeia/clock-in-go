@@ -71,3 +71,23 @@
     box-shadow: var(--shadow-elevated);
   }
 }
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes icon-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(255,255,255,0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255,255,255,1));
+  }
+}

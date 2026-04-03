@@ -168,26 +168,52 @@ function ClockScreen({ employeeId }: { employeeId: string }) {
         </div>
 
         {/* Clock button */}
-        <div className="relative mb-6">
-          <svg className="absolute inset-0 w-[180px] h-[180px] -rotate-90" viewBox="0 0 180 180">
+        <div className="relative mb-6 flex items-center justify-center" style={{ width: 200, height: 200 }}>
+          {/* Pulse ring effect */}
+          {progress > 0 && !confirmed && (
+            <div
+              className="absolute rounded-full border-2 border-success"
+              style={{
+                width: 180, height: 180,
+                animation: 'pulse-ring 1s cubic-bezier(0,0,0.2,1) infinite',
+              }}
+            />
+          )}
+          <svg className="absolute w-[180px] h-[180px] -rotate-90" viewBox="0 0 180 180">
             <circle cx="90" cy="90" r="82" fill="none" stroke="currentColor" className="text-border" strokeWidth="4" />
-            <circle cx="90" cy="90" r="82" fill="none" stroke="currentColor" className="text-success" strokeWidth="4"
+            <circle cx="90" cy="90" r="82" fill="none" stroke="white" strokeWidth="6"
               strokeDasharray={circumference} strokeDashoffset={circumference * (1 - progress)} strokeLinecap="round"
-              style={{ transition: progress === 0 ? 'none' : 'stroke-dashoffset 0.05s linear' }} />
+              style={{ transition: progress === 0 ? 'none' : 'stroke-dashoffset 0.05s linear', opacity: progress > 0 ? 0.9 : 0 }} />
           </svg>
           <button
             onMouseDown={startPress} onMouseUp={endPress} onMouseLeave={endPress}
             onTouchStart={startPress} onTouchEnd={endPress}
-            className="w-[180px] h-[180px] rounded-full gradient-clock flex items-center justify-center text-success-foreground transition-transform touch-none"
-            style={{ transform: progress > 0 && !confirmed ? 'scale(1.05)' : 'scale(1)' }}
+            className="w-[180px] h-[180px] rounded-full gradient-clock flex items-center justify-center text-success-foreground touch-none"
+            style={{
+              transform: confirmed ? 'scale(1)' : progress > 0 ? `scale(${1.05 + progress * 0.05})` : 'scale(1)',
+              transition: 'transform 0.15s ease-out',
+            }}
           >
-            {confirmed ? <Check className="w-12 h-12" /> : <Fingerprint className="w-12 h-12" />}
+            {confirmed ? (
+              <Check className="w-12 h-12" />
+            ) : (
+              <Fingerprint
+                className="w-12 h-12"
+                style={{
+                  transform: progress > 0 ? `scale(${1 + progress * 0.3})` : 'scale(1)',
+                  transition: 'transform 0.1s ease-out, filter 0.1s ease-out',
+                  animation: progress > 0 ? 'icon-glow 1s ease-in-out infinite' : 'none',
+                }}
+              />
+            )}
           </button>
         </div>
 
         {/* Messages */}
         {confirmMsg ? (
           <p className="text-sm text-success font-medium text-center animate-fade-in-up max-w-xs">{confirmMsg}</p>
+        ) : progress > 0 && !confirmed ? (
+          <p className="text-sm text-muted-foreground animate-pulse">Manteniendo…</p>
         ) : !hasClocked ? (
           <p className="text-sm text-muted-foreground">Mantén pulsado para fichar</p>
         ) : null}
