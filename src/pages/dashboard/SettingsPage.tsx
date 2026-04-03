@@ -9,8 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { shifts } from '@/data/mockData';
 import { toast } from 'sonner';
+import { useAuth, PlanType } from '@/store/AuthContext';
+import { Check } from 'lucide-react';
 
 export default function SettingsPage() {
+  const { user, updatePlan } = useAuth();
   const [pressTime, setPressTime] = useState([2]);
 
   return (
