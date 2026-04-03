@@ -154,8 +154,8 @@ const LandingPage = () => {
             <a href="#testimonials" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Testimonios</a>
           </div>
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" className="rounded-full" size="sm" asChild><Link to="/dashboard">Iniciar sesión</Link></Button>
-            <Button className="rounded-full" size="sm" asChild><Link to="/clock">Empezar gratis</Link></Button>
+            <Button variant="outline" className="rounded-full" size="sm" asChild><Link to="/login">Iniciar sesión</Link></Button>
+            <Button className="rounded-full" size="sm" asChild><Link to="/register">Empezar gratis</Link></Button>
           </div>
           <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -167,8 +167,8 @@ const LandingPage = () => {
             <a href="#pricing" className="block text-sm" onClick={() => setMenuOpen(false)}>Pricing</a>
             <a href="#testimonials" className="block text-sm" onClick={() => setMenuOpen(false)}>Testimonios</a>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="rounded-full flex-1" size="sm" asChild><Link to="/dashboard">Iniciar sesión</Link></Button>
-              <Button className="rounded-full flex-1" size="sm" asChild><Link to="/clock">Empezar gratis</Link></Button>
+              <Button variant="outline" className="rounded-full flex-1" size="sm" asChild><Link to="/login">Iniciar sesión</Link></Button>
+              <Button className="rounded-full flex-1" size="sm" asChild><Link to="/register">Empezar gratis</Link></Button>
             </div>
           </div>
         )}
@@ -184,7 +184,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <Button size="lg" className="rounded-full text-base gap-2 gradient-primary border-0 text-primary-foreground" asChild>
-              <Link to="/clock">Empezar gratis <ArrowRight className="w-4 h-4" /></Link>
+              <Link to="/register">Empezar gratis <ArrowRight className="w-4 h-4" /></Link>
             </Button>
             <Button size="lg" variant="outline" className="rounded-full text-base" asChild>
               <a href="#demo">Ver demo</a>
@@ -369,7 +369,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-3">Tu equipo ficha mañana con ClockIn</h2>
           <p className="opacity-80 mb-8 text-lg">10 minutos de setup. Gratis para siempre hasta 5 empleados.</p>
           <Button size="lg" className="rounded-full text-base gap-2 bg-success hover:bg-success/90 text-success-foreground border-0" asChild>
-            <Link to="/clock">Crear mi cuenta gratis <ArrowRight className="w-4 h-4" /></Link>
+            <Link to="/register">Crear mi cuenta gratis <ArrowRight className="w-4 h-4" /></Link>
           </Button>
           <p className="mt-6 text-sm opacity-60">2,100+ empresas · 24,000+ empleados · 0 hardware necesario</p>
         </div>

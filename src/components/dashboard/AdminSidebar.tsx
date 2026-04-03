@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Clock, LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { alerts } from '@/data/mockData';
+import { useAuth } from '@/store/AuthContext';
 
 const navItems = [
   { title: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
@@ -17,7 +18,16 @@ const navItems = [
 
 export default function AdminSidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCollapsed: (v: boolean) => void }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const unreadAlerts = alerts.filter(a => a.status === 'unread').length;
+
+  const planLabel = user?.plan ? user.plan.toUpperCase() : 'STARTER';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <aside className={`h-screen sticky top-0 bg-background border-r flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'}`}>
@@ -26,6 +36,14 @@ export default function AdminSidebar({ collapsed, setCollapsed }: { collapsed: b
         <Clock className="w-5 h-5 flex-shrink-0" />
         {!collapsed && <span className="font-bold text-lg">CLOCKIN</span>}
       </div>
+
+      {/* User info */}
+      {!collapsed && user && (
+        <div className="px-4 py-3 border-b">
+          <p className="text-sm font-medium truncate">{user.name}</p>
+          <p className="text-xs text-muted-foreground truncate">{user.company}</p>
+        </div>
+      )}
 
       {/* Nav */}
       <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
@@ -56,9 +74,14 @@ export default function AdminSidebar({ collapsed, setCollapsed }: { collapsed: b
       <div className="p-3 border-t space-y-2">
         {!collapsed && (
           <div className="px-3 py-2">
-            <Badge variant="default" className="text-xs">BUSINESS</Badge>
+            <Badge variant="default" className="text-xs">{planLabel}</Badge>
           </div>
         )}
+        <button onClick={handleLogout}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary/50 w-full">
+          <LogOut className="w-4 h-4" />
+          {!collapsed && <span>Cerrar sesión</span>}
+        </button>
         <button onClick={() => setCollapsed(!collapsed)}
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-secondary/50 w-full">
           {collapsed ? <ChevronRight className="w-4 h-4" /> : <><ChevronLeft className="w-4 h-4" /><span>Colapsar</span></>}

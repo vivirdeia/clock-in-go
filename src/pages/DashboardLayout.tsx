@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { Bell, Search, ChevronRight } from 'lucide-react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Bell, Search, ChevronRight, LogOut } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
 import { alerts } from '@/data/mockData';
+import { useAuth } from '@/store/AuthContext';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const breadcrumbMap: Record<string, string> = {
   '/dashboard': 'Dashboard',
@@ -20,8 +21,19 @@ const breadcrumbMap: Record<string, string> = {
 export default function DashboardLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const unreadAlerts = alerts.filter(a => a.status === 'unread').length;
   const pageTitle = breadcrumbMap[location.pathname] || 'Dashboard';
+
+  const initials = user?.name
+    ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+    : 'AD';
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-secondary/30">
@@ -30,7 +42,7 @@ export default function DashboardLayout() {
         {/* Header */}
         <header className="h-16 bg-background border-b flex items-center justify-between px-6 sticky top-0 z-40">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground">TechCorp SL</span>
+            <span className="text-muted-foreground">{user?.company || 'TechCorp SL'}</span>
             <ChevronRight className="w-3 h-3 text-muted-foreground" />
             <span className="font-medium">{pageTitle}</span>
           </div>
@@ -45,7 +57,21 @@ export default function DashboardLayout() {
                 <span className="absolute -top-0.5 -right-0.5 bg-destructive text-destructive-foreground text-[10px] rounded-full w-4 h-4 flex items-center justify-center">{unreadAlerts}</span>
               )}
             </button>
-            <div className="w-8 h-8 rounded-full bg-foreground text-primary-foreground flex items-center justify-center text-xs font-bold">AD</div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="w-8 h-8 rounded-full bg-foreground text-primary-foreground flex items-center justify-center text-xs font-bold">
+                  {initials}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="text-xs text-muted-foreground" disabled>
+                  {user?.email}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />Cerrar sesión
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </header>
         {/* Content */}
