@@ -2,11 +2,27 @@ import { useState } from 'react';
 import { clockRecords, employees, departments, getEmployee, getDepartment, formatTime, formatShortDate, getInitials } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Download, X } from 'lucide-react';
 import { toast } from 'sonner';
+
+function downloadCSV(records: typeof clockRecords) {
+  const header = 'Empleado,Departamento,Tipo,Fecha,Hora,Dirección,Lat,Lng,En zona,Precisión\n';
+  const rows = records.map(r => {
+    const emp = getEmployee(r.employeeId);
+    const dept = emp ? getDepartment(emp.departmentId) : null;
+    return `"${emp?.name || ''}","${dept?.name || ''}","${r.type === 'entry' ? 'Entrada' : 'Salida'}","${formatShortDate(r.timestamp)}","${formatTime(r.timestamp)}","${r.address}",${r.lat},${r.lng},${r.inZone ? 'Sí' : 'No'},${r.accuracy}m`;
+  }).join('\n');
+  const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fichajes_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`CSV descargado con ${records.length} registros`);
+}
 
 export default function ClockRecordsPage() {
   const [deptFilter, setDeptFilter] = useState('all');
@@ -24,12 +40,11 @@ export default function ClockRecordsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">Fichajes</h2>
-        <Button variant="outline" className="gap-2" onClick={() => toast.success('Exportación iniciada')}>
+        <Button variant="outline" className="gap-2" onClick={() => downloadCSV(filtered)}>
           <Download className="w-4 h-4" />Exportar CSV
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={deptFilter} onValueChange={setDeptFilter}>
           <SelectTrigger className="w-44"><SelectValue placeholder="Departamento" /></SelectTrigger>
@@ -59,7 +74,6 @@ export default function ClockRecordsPage() {
 
       <p className="text-sm text-muted-foreground">Mostrando {filtered.length} registros</p>
 
-      {/* Table */}
       <div className="bg-background rounded-card border overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
@@ -102,7 +116,6 @@ export default function ClockRecordsPage() {
         </table>
       </div>
 
-      {/* Detail modal */}
       <Dialog open={!!selectedRecord} onOpenChange={() => setSelectedRecord(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>Detalle del fichaje</DialogTitle></DialogHeader>

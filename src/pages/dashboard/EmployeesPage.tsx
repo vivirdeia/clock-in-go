@@ -1,27 +1,93 @@
-import { useState } from 'react';
-import { employees, departments, shifts, getEmployeeTodayStatus, getDepartment, getShift, getInitials, getTodayRecords, formatTime, clockRecords } from '@/data/mockData';
+import { useState, useRef } from 'react';
+import { employees as initialEmployees, departments, shifts, getEmployeeTodayStatus, getDepartment, getShift, getInitials, getTodayRecords, formatTime, clockRecords, type Employee } from '@/data/mockData';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Grid3X3, List, Eye, EyeOff } from 'lucide-react';
+import { Plus, Grid3X3, List, Eye, EyeOff, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function EmployeesPage() {
+  const [employeesList, setEmployeesList] = useState<Employee[]>([...initialEmployees]);
   const [view, setView] = useState<'table' | 'grid'>('table');
   const [selectedEmp, setSelectedEmp] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showPin, setShowPin] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
 
-  const emp = selectedEmp ? employees.find(e => e.id === selectedEmp) : null;
+  // Add form refs
+  const addNameRef = useRef<HTMLInputElement>(null);
+  const addEmailRef = useRef<HTMLInputElement>(null);
+  const addPhoneRef = useRef<HTMLInputElement>(null);
+  const [addDept, setAddDept] = useState('');
+  const [addShift, setAddShift] = useState('');
+  const [addPin, setAddPin] = useState(String(Math.floor(1000 + Math.random() * 9000)));
 
-  // Mock hours chart data
+  // Edit form state
+  const [editName, setEditName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editDept, setEditDept] = useState('');
+  const [editShift, setEditShift] = useState('');
+
+  const emp = selectedEmp ? employeesList.find(e => e.id === selectedEmp) : null;
+
   const hoursData = Array.from({ length: 20 }, (_, i) => ({
     day: `D${i + 1}`,
     hours: 7 + Math.random() * 2.5,
   }));
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newEmp: Employee = {
+      id: `e_${Date.now()}`,
+      name: addNameRef.current?.value || '',
+      email: addEmailRef.current?.value || '',
+      phone: addPhoneRef.current?.value || '',
+      departmentId: addDept || departments[0].id,
+      shiftId: addShift || shifts[0].id,
+      pin: addPin,
+      status: 'active',
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+    setEmployeesList(prev => [...prev, newEmp]);
+    setShowAdd(false);
+    setAddPin(String(Math.floor(1000 + Math.random() * 9000)));
+    setAddDept('');
+    setAddShift('');
+    toast.success(`Empleado ${newEmp.name} creado con PIN ${newEmp.pin}`);
+  };
+
+  const handleDelete = (id: string) => {
+    const name = employeesList.find(e => e.id === id)?.name;
+    setEmployeesList(prev => prev.filter(e => e.id !== id));
+    setSelectedEmp(null);
+    toast.success(`${name} eliminado`);
+  };
+
+  const startEdit = () => {
+    if (!emp) return;
+    setEditName(emp.name);
+    setEditEmail(emp.email);
+    setEditPhone(emp.phone);
+    setEditDept(emp.departmentId);
+    setEditShift(emp.shiftId);
+    setEditMode(true);
+  };
+
+  const handleEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEmp) return;
+    setEmployeesList(prev => prev.map(emp =>
+      emp.id === selectedEmp
+        ? { ...emp, name: editName, email: editEmail, phone: editPhone, departmentId: editDept, shiftId: editShift }
+        : emp
+    ));
+    setEditMode(false);
+    toast.success('Empleado actualizado');
+  };
 
   return (
     <div className="space-y-6">
@@ -50,13 +116,13 @@ export default function EmployeesPage() {
               </tr>
             </thead>
             <tbody>
-              {employees.map(e => {
+              {employeesList.map(e => {
                 const dept = getDepartment(e.departmentId);
                 const shift = getShift(e.shiftId);
                 const status = getEmployeeTodayStatus(e.id);
                 const todayEntry = getTodayRecords().find(r => r.employeeId === e.id && r.type === 'entry');
                 return (
-                  <tr key={e.id} className="border-b hover:bg-secondary/30 cursor-pointer transition-colors" onClick={() => setSelectedEmp(e.id)}>
+                  <tr key={e.id} className="border-b hover:bg-secondary/30 cursor-pointer transition-colors" onClick={() => { setSelectedEmp(e.id); setEditMode(false); }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">{getInitials(e.name)}</div>
@@ -86,12 +152,12 @@ export default function EmployeesPage() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {employees.map(e => {
+          {employeesList.map(e => {
             const dept = getDepartment(e.departmentId);
             const shift = getShift(e.shiftId);
             const status = getEmployeeTodayStatus(e.id);
             return (
-              <div key={e.id} className="bg-background rounded-card border p-5 cursor-pointer hover:shadow-elevated transition-shadow" onClick={() => setSelectedEmp(e.id)}>
+              <div key={e.id} className="bg-background rounded-card border p-5 cursor-pointer hover:shadow-elevated transition-shadow" onClick={() => { setSelectedEmp(e.id); setEditMode(false); }}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-bold">{getInitials(e.name)}</div>
                   <div>
@@ -113,11 +179,11 @@ export default function EmployeesPage() {
         </div>
       )}
 
-      {/* Employee detail */}
-      <Dialog open={!!selectedEmp} onOpenChange={() => setSelectedEmp(null)}>
+      {/* Employee detail / edit */}
+      <Dialog open={!!selectedEmp} onOpenChange={() => { setSelectedEmp(null); setEditMode(false); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Ficha del empleado</DialogTitle></DialogHeader>
-          {emp && (() => {
+          <DialogHeader><DialogTitle>{editMode ? 'Editar empleado' : 'Ficha del empleado'}</DialogTitle></DialogHeader>
+          {emp && !editMode && (() => {
             const dept = getDepartment(emp.departmentId);
             const shift = getShift(emp.shiftId);
             const status = getEmployeeTodayStatus(emp.id);
@@ -126,7 +192,7 @@ export default function EmployeesPage() {
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center text-lg font-bold">{getInitials(emp.name)}</div>
-                  <div>
+                  <div className="flex-1">
                     <h3 className="text-xl font-bold">{emp.name}</h3>
                     <p className="text-muted-foreground text-sm">{emp.email} · {emp.phone}</p>
                     <div className="flex items-center gap-2 mt-1">
@@ -138,6 +204,11 @@ export default function EmployeesPage() {
                       </div>
                     </div>
                   </div>
+                </div>
+
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="gap-1" onClick={startEdit}><Pencil className="w-3 h-3" />Editar</Button>
+                  <Button variant="destructive" size="sm" className="gap-1" onClick={() => handleDelete(emp.id)}><Trash2 className="w-3 h-3" />Eliminar</Button>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -182,6 +253,30 @@ export default function EmployeesPage() {
               </div>
             );
           })()}
+
+          {emp && editMode && (
+            <form onSubmit={handleEdit} className="space-y-4">
+              <div><label className="text-sm font-medium">Nombre completo *</label><Input value={editName} onChange={e => setEditName(e.target.value)} required /></div>
+              <div><label className="text-sm font-medium">Email *</label><Input type="email" value={editEmail} onChange={e => setEditEmail(e.target.value)} required /></div>
+              <div><label className="text-sm font-medium">Teléfono</label><Input value={editPhone} onChange={e => setEditPhone(e.target.value)} /></div>
+              <div><label className="text-sm font-medium">Departamento</label>
+                <Select value={editDept} onValueChange={setEditDept}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Turno</label>
+                <Select value={editShift} onValueChange={setEditShift}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{shifts.map(s => <SelectItem key={s.id} value={s.id}>{s.name} {s.startTime && `${s.startTime}-${s.endTime}`}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1">Guardar cambios</Button>
+                <Button type="button" variant="outline" onClick={() => setEditMode(false)}>Cancelar</Button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -189,24 +284,26 @@ export default function EmployeesPage() {
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent>
           <DialogHeader><DialogTitle>Añadir empleado</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => { e.preventDefault(); toast.success('Empleado creado. Se le enviará el link de acceso por email.'); setShowAdd(false); }} className="space-y-4">
-            <div><label className="text-sm font-medium">Nombre completo *</label><Input placeholder="Nombre completo" required /></div>
-            <div><label className="text-sm font-medium">Email *</label><Input type="email" placeholder="email@empresa.com" required /></div>
-            <div><label className="text-sm font-medium">Teléfono</label><Input placeholder="+34 612 345 678" /></div>
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div><label className="text-sm font-medium">Nombre completo *</label><Input ref={addNameRef} placeholder="Nombre completo" required /></div>
+            <div><label className="text-sm font-medium">Email *</label><Input ref={addEmailRef} type="email" placeholder="email@empresa.com" required /></div>
+            <div><label className="text-sm font-medium">Teléfono</label><Input ref={addPhoneRef} placeholder="+34 612 345 678" /></div>
             <div><label className="text-sm font-medium">Departamento</label>
-              <Select><SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+              <Select value={addDept} onValueChange={setAddDept}>
+                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                 <SelectContent>{departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><label className="text-sm font-medium">Turno</label>
-              <Select><SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+              <Select value={addShift} onValueChange={setAddShift}>
+                <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                 <SelectContent>{shifts.map(s => <SelectItem key={s.id} value={s.id}>{s.name} {s.startTime && `${s.startTime}-${s.endTime}`}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><label className="text-sm font-medium">PIN (4 dígitos)</label>
               <div className="flex gap-2">
-                <Input placeholder="1234" maxLength={4} defaultValue={String(Math.floor(1000 + Math.random() * 9000))} />
-                <Button type="button" variant="outline" size="sm" onClick={() => {}}>Regenerar</Button>
+                <Input value={addPin} onChange={e => setAddPin(e.target.value)} maxLength={4} />
+                <Button type="button" variant="outline" size="sm" onClick={() => setAddPin(String(Math.floor(1000 + Math.random() * 9000)))}>Regenerar</Button>
               </div>
             </div>
             <Button type="submit" className="w-full">Guardar</Button>
