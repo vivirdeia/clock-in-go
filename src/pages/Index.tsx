@@ -123,8 +123,8 @@ function PricingSection() {
                   </li>
                 ))}
               </ul>
-              <Button variant={plan.outline ? 'outline' : 'default'} className="w-full rounded-full" size="lg">
-                {plan.cta}
+              <Button variant={plan.outline ? 'outline' : 'default'} className="w-full rounded-full" size="lg" asChild>
+                <Link to="/register">{plan.cta}</Link>
               </Button>
               {plan.popular && <p className="text-center text-xs text-muted-foreground mt-3">14 días gratis · Sin tarjeta</p>}
             </div>
