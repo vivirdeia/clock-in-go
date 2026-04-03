@@ -167,8 +167,8 @@ const LandingPage = () => {
             <a href="#pricing" className="block text-sm" onClick={() => setMenuOpen(false)}>Pricing</a>
             <a href="#testimonials" className="block text-sm" onClick={() => setMenuOpen(false)}>Testimonios</a>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" className="rounded-full flex-1" size="sm" asChild><Link to="/dashboard">Iniciar sesión</Link></Button>
-              <Button className="rounded-full flex-1" size="sm" asChild><Link to="/clock">Empezar gratis</Link></Button>
+              <Button variant="outline" className="rounded-full flex-1" size="sm" asChild><Link to="/login">Iniciar sesión</Link></Button>
+              <Button className="rounded-full flex-1" size="sm" asChild><Link to="/register">Empezar gratis</Link></Button>
             </div>
           </div>
         )}
