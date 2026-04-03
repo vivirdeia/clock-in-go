@@ -257,7 +257,7 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Características</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {[
-              { icon: Clock, title: 'Fichaje en 1 toque', desc: 'El empleado solo ve un botón. Sin menús, sin formularios, sin complicaciones. Fichar tarda 2 segundos.' },
+              { icon: Fingerprint, title: 'Fichaje en 1 toque', desc: 'El empleado solo ve un botón. Sin menús, sin formularios, sin complicaciones. Fichar tarda 2 segundos.' },
               { icon: MapPin, title: 'GPS en cada fichaje', desc: 'Cada registro incluye coordenadas y dirección legible. Sabes dónde fichó exactamente.' },
               { icon: ShieldCheck, title: 'Anti-fraude', desc: 'Pulsación larga de 2 segundos obligatoria con vibración y sonido. Imposible de automatizar o falsificar.' },
               { icon: Target, title: 'Geofencing', desc: 'Define zonas válidas de fichaje. Si alguien ficha fuera, recibes alerta.' },
