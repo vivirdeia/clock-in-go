@@ -41,7 +41,7 @@ export default function SelectPlanPage() {
     }
     updatePlan(plan);
     toast.success(`Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)} activado`);
-    navigate('/dashboard');
+    navigate(user.needsOnboarding ? '/onboarding' : '/dashboard');
   };
 
   return (
