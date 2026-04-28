@@ -76,7 +76,22 @@ const defaultAdmin: RegisteredAdmin = {
 function getAdmins(): RegisteredAdmin[] {
   try {
     const stored = localStorage.getItem(ADMINS_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const parsed: RegisteredAdmin[] = JSON.parse(stored);
+      let mutated = false;
+      const seedIdx = parsed.findIndex(a => a.email.toLowerCase() === defaultAdmin.email.toLowerCase());
+      if (seedIdx >= 0 && !parsed[seedIdx].passwordPlain) {
+        parsed[seedIdx].passwordPlain = defaultAdmin.passwordPlain;
+        parsed[seedIdx].passwordHash = defaultAdmin.passwordHash;
+        mutated = true;
+      }
+      if (seedIdx < 0) {
+        parsed.unshift(defaultAdmin);
+        mutated = true;
+      }
+      if (mutated) localStorage.setItem(ADMINS_KEY, JSON.stringify(parsed));
+      return parsed;
+    }
   } catch {}
   const initial = [defaultAdmin];
   localStorage.setItem(ADMINS_KEY, JSON.stringify(initial));
@@ -88,8 +103,10 @@ function saveAdmins(admins: RegisteredAdmin[]) {
 }
 
 function checkPassword(admin: RegisteredAdmin, password: string): boolean {
-  // Compare plain (kept for demo) — keeps backwards compat too.
-  return admin.passwordPlain === password;
+  // Prefer plain-text comparison (demo). Fall back to legacy hash for older
+  // sessions where passwordPlain wasn't stored yet.
+  if (admin.passwordPlain) return admin.passwordPlain === password;
+  return admin.passwordHash === syncHash(password);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
