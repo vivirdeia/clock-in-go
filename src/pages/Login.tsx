@@ -169,6 +169,57 @@ export default function LoginPage() {
           <Link to="/register" className="text-foreground font-medium hover:underline">Crear cuenta</Link>
         </p>
       </div>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Recuperar contraseña</DialogTitle>
+            <DialogDescription>
+              Modo demo: te mostramos tu contraseña en pantalla. En producción enviaríamos un email seguro.
+            </DialogDescription>
+          </DialogHeader>
+
+          {recoveredPassword ? (
+            <div className="space-y-3">
+              <p className="text-sm">Tu contraseña es:</p>
+              <div className="rounded-md border bg-muted px-3 py-2 font-mono text-center text-lg">
+                {recoveredPassword}
+              </div>
+              <DialogFooter>
+                <Button className="w-full rounded-full" onClick={() => {
+                  setPassword(recoveredPassword);
+                  setEmail(forgotEmail);
+                  setForgotOpen(false);
+                  toast.success('Contraseña rellenada. Pulsa Entrar.');
+                }}>
+                  Usar y cerrar
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <form onSubmit={handleRecover} className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1.5 block">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="email"
+                    placeholder="admin@empresa.es"
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    className="pl-9"
+                    required
+                  />
+                </div>
+              </div>
+              {forgotError && <p className="text-destructive text-sm">{forgotError}</p>}
+              <DialogFooter>
+                <Button type="submit" className="w-full rounded-full">Recuperar</Button>
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
