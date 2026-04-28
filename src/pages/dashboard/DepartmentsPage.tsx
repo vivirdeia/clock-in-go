@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { departments as initialDepartments, employees as allEmployees, getEmployeesByDepartment, getEmployeeTodayStatus, getEmployee, type Department } from '@/data/mockData';
+import { useDataStore } from '@/store/dataStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -10,58 +10,61 @@ import { Plus, Trash2, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DepartmentsPage() {
-  const [deptsList, setDeptsList] = useState<Department[]>([...initialDepartments]);
+  const {
+    departments, employees, shifts,
+    addDepartment, updateDepartment, deleteDepartment,
+    getEmployeesByDepartment, getEmployeeTodayStatus, getEmployee,
+  } = useDataStore();
+
   const [selectedDept, setSelectedDept] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
-  // Add form
   const addNameRef = useRef<HTMLInputElement>(null);
   const addDescRef = useRef<HTMLTextAreaElement>(null);
   const [addManager, setAddManager] = useState('');
+  const [addShiftId, setAddShiftId] = useState(shifts[0]?.id || '');
 
-  // Edit form
   const [editName, setEditName] = useState('');
   const [editDesc, setEditDesc] = useState('');
   const [editManager, setEditManager] = useState('');
+  const [editShiftId, setEditShiftId] = useState('');
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
-    const newDept: Department = {
-      id: `d_${Date.now()}`,
+    const newDept = addDepartment({
       name: addNameRef.current?.value || '',
       managerId: addManager || '',
       description: addDescRef.current?.value || '',
-      defaultShiftId: 's1',
-    };
-    setDeptsList(prev => [...prev, newDept]);
+      defaultShiftId: addShiftId || shifts[0]?.id || 's1',
+    });
     setShowAdd(false);
     setAddManager('');
     toast.success(`Departamento "${newDept.name}" creado`);
   };
 
   const handleDelete = (id: string) => {
-    const name = deptsList.find(d => d.id === id)?.name;
-    setDeptsList(prev => prev.filter(d => d.id !== id));
+    if (getEmployeesByDepartment(id).length > 0) {
+      toast.error('No puedes eliminar un departamento con empleados asignados');
+      return;
+    }
+    const name = departments.find(d => d.id === id)?.name;
+    deleteDepartment(id);
     setSelectedDept(null);
     toast.success(`Departamento "${name}" eliminado`);
   };
 
   const startEdit = () => {
-    const dept = deptsList.find(d => d.id === selectedDept);
+    const dept = departments.find(d => d.id === selectedDept);
     if (!dept) return;
-    setEditName(dept.name);
-    setEditDesc(dept.description);
-    setEditManager(dept.managerId);
+    setEditName(dept.name); setEditDesc(dept.description); setEditManager(dept.managerId); setEditShiftId(dept.defaultShiftId);
     setEditMode(true);
   };
 
   const handleEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDept) return;
-    setDeptsList(prev => prev.map(d =>
-      d.id === selectedDept ? { ...d, name: editName, description: editDesc, managerId: editManager } : d
-    ));
+    updateDepartment(selectedDept, { name: editName, description: editDesc, managerId: editManager, defaultShiftId: editShiftId });
     setEditMode(false);
     toast.success('Departamento actualizado');
   };
@@ -69,51 +72,56 @@ export default function DepartmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Departamentos</h2>
-        <Button className="gap-2" onClick={() => setShowAdd(true)}><Plus className="w-4 h-4" />Nuevo departamento</Button>
+        <h2 className="text-2xl font-semibold">Departamentos</h2>
+        <Button className="gap-2" onClick={() => setShowAdd(true)}><Plus className="w-4 h-4" strokeWidth={1.5} />Nuevo departamento</Button>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {deptsList.map(d => {
-          const emps = getEmployeesByDepartment(d.id);
-          const present = emps.filter(e => getEmployeeTodayStatus(e.id) === 'present').length;
-          const manager = getEmployee(d.managerId);
-          const pct = emps.length > 0 ? Math.round((present / emps.length) * 100) : 0;
-          return (
-            <div key={d.id} className="bg-background rounded-card border p-5 cursor-pointer hover:shadow-elevated transition-shadow" onClick={() => { setSelectedDept(d.id); setEditMode(false); }}>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold">{d.name}</h3>
-                <Badge variant={present === emps.length ? 'outline' : 'secondary'}
-                  className={present === emps.length ? 'text-success border-success text-xs' : 'text-xs'}>
-                  {present}/{emps.length}
-                </Badge>
+      {departments.length === 0 ? (
+        <div className="bg-background rounded-card border p-12 text-center">
+          <p className="text-muted-foreground text-sm mb-4">Aún no tienes departamentos.</p>
+          <Button onClick={() => setShowAdd(true)} className="gap-2"><Plus className="w-4 h-4" />Crear el primero</Button>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {departments.map(d => {
+            const emps = getEmployeesByDepartment(d.id);
+            const present = emps.filter(e => getEmployeeTodayStatus(e.id) === 'present').length;
+            const manager = getEmployee(d.managerId);
+            const pct = emps.length > 0 ? Math.round((present / emps.length) * 100) : 0;
+            return (
+              <div key={d.id} className="bg-background rounded-card border p-5 cursor-pointer hover:border-border-strong transition-colors" onClick={() => { setSelectedDept(d.id); setEditMode(false); }}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold">{d.name}</h3>
+                  <Badge variant="outline" className={`text-xs ${emps.length > 0 && present === emps.length ? 'text-success border-success' : ''}`}>
+                    {present}/{emps.length}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">Responsable: {manager?.name || '—'}</p>
+                <div className="w-full h-1.5 bg-secondary rounded-full mb-2">
+                  <div className={`h-full rounded-full ${emps.length > 0 && present === emps.length ? 'bg-success' : present === 0 ? 'bg-destructive' : 'bg-warning'}`}
+                    style={{ width: `${pct}%` }} />
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{emps.length} empleados</span>
+                  <span>{pct}% presencia</span>
+                </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-3">Responsable: {manager?.name || '—'}</p>
-              <div className="w-full h-1.5 bg-secondary rounded-full mb-2">
-                <div className={`h-full rounded-full ${present === emps.length ? 'bg-success' : present === 0 ? 'bg-destructive' : 'bg-warning'}`}
-                  style={{ width: `${pct}%` }} />
-              </div>
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{emps.length} empleados</span>
-                <span>{pct}% puntualidad</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Detail / Edit */}
       <Dialog open={!!selectedDept} onOpenChange={() => { setSelectedDept(null); setEditMode(false); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editMode ? 'Editar departamento' : 'Departamento'}</DialogTitle></DialogHeader>
           {selectedDept && !editMode && (() => {
-            const dept = deptsList.find(d => d.id === selectedDept)!;
+            const dept = departments.find(d => d.id === selectedDept)!;
             const emps = getEmployeesByDepartment(dept.id);
             const manager = getEmployee(dept.managerId);
             return (
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-bold">{dept.name}</h3>
+                  <h3 className="text-lg font-semibold">{dept.name}</h3>
                   <p className="text-sm text-muted-foreground">{dept.description}</p>
                   <p className="text-sm mt-1">Responsable: <strong>{manager?.name || '—'}</strong></p>
                 </div>
@@ -149,7 +157,13 @@ export default function DepartmentsPage() {
               <div><label className="text-sm font-medium">Responsable</label>
                 <Select value={editManager} onValueChange={setEditManager}>
                   <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                  <SelectContent>{allEmployees.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
+                  <SelectContent>{employees.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div><label className="text-sm font-medium">Turno por defecto</label>
+                <Select value={editShiftId} onValueChange={setEditShiftId}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>{shifts.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><label className="text-sm font-medium">Descripción</label><Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} /></div>
@@ -162,7 +176,6 @@ export default function DepartmentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Add */}
       <Dialog open={showAdd} onOpenChange={setShowAdd}>
         <DialogContent>
           <DialogHeader><DialogTitle>Nuevo departamento</DialogTitle></DialogHeader>
@@ -171,7 +184,13 @@ export default function DepartmentsPage() {
             <div><label className="text-sm font-medium">Responsable</label>
               <Select value={addManager} onValueChange={setAddManager}>
                 <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
-                <SelectContent>{allEmployees.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
+                <SelectContent>{employees.map(e => <SelectItem key={e.id} value={e.id}>{e.name}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div><label className="text-sm font-medium">Turno por defecto</label>
+              <Select value={addShiftId} onValueChange={setAddShiftId}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{shifts.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div><label className="text-sm font-medium">Descripción</label><Textarea ref={addDescRef} /></div>
