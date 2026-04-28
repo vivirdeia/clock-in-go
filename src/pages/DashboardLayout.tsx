@@ -4,7 +4,7 @@ import AnimatedOutlet from '@/components/AnimatedOutlet';
 import { Bell, Search, ChevronRight, LogOut, Menu } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import AdminSidebar from '@/components/dashboard/AdminSidebar';
-import { alerts } from '@/data/mockData';
+import { useDataStore } from '@/store/dataStore';
 import { useAuth } from '@/store/AuthContext';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
@@ -25,6 +25,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { alerts } = useDataStore();
   const unreadAlerts = alerts.filter(a => a.status === 'unread').length;
   const pageTitle = breadcrumbMap[location.pathname] || 'Dashboard';
 

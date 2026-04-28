@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import LogoIcon from '@/components/LogoIcon';
 import { Badge } from '@/components/ui/badge';
-import { alerts } from '@/data/mockData';
+import { useDataStore } from '@/store/dataStore';
 import { useAuth } from '@/store/AuthContext';
 
 const navItems = [
@@ -28,6 +28,7 @@ export default function AdminSidebar({ collapsed, setCollapsed, mobileOpen, setM
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { alerts } = useDataStore();
   const unreadAlerts = alerts.filter(a => a.status === 'unread').length;
 
   const planLabel = user?.plan ? user.plan.toUpperCase() : 'STARTER';
