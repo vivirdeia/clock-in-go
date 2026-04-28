@@ -7,19 +7,39 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/store/AuthContext';
 import { toast } from 'sonner';
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { loginAdmin, loginEmployee } = useAuth();
+  const { loginAdmin, loginEmployee, recoverPassword } = useAuth();
 
   // Admin form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminError, setAdminError] = useState('');
 
+  // Forgot password
+  const [forgotOpen, setForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [recoveredPassword, setRecoveredPassword] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState('');
+
   // Employee PIN
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
+
+  const handleRecover = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    const result = recoverPassword(forgotEmail);
+    if (result.success && result.password) {
+      setRecoveredPassword(result.password);
+    } else {
+      setForgotError('No se ha encontrado ninguna cuenta con este email.');
+    }
+  };
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,7 +119,12 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground w-full text-center"
-                onClick={() => toast.info('En producción se enviaría un email de recuperación')}
+                onClick={() => {
+                  setForgotEmail(email);
+                  setRecoveredPassword(null);
+                  setForgotError('');
+                  setForgotOpen(true);
+                }}
               >
                 ¿Olvidaste tu contraseña?
               </button>
