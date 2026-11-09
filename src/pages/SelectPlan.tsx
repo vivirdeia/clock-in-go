@@ -1,94 +1,74 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Check, ArrowRight } from 'lucide-react';
-import Wordmark from "@/components/Wordmark";
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Check } from 'lucide-react';
+import Wordmark from '@/components/Wordmark';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useAuth, PlanType } from '@/store/AuthContext';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+
+const plans: { key: PlanType; name: string; price: number; desc: string; features: string[] }[] = [
+  { key: 'starter', name: 'Starter', price: 0, desc: 'Hasta 5 empleados', features: ['Fichaje con GPS y anti-fraude', 'Panel básico', 'Historial de 30 días', '1 zona de fichaje'] },
+  { key: 'business', name: 'Business', price: 29, desc: 'Hasta 25 empleados', features: ['Todo lo de Starter', 'Historial ilimitado', 'Departamentos y turnos', 'Zonas ilimitadas y avisos', 'Informes CSV y PDF'] },
+  { key: 'enterprise', name: 'Enterprise', price: 59, desc: 'Hasta 100 empleados', features: ['Todo lo de Business', 'Varios centros de trabajo', 'API y webhooks', 'Marca blanca y soporte dedicado'] },
+];
 
 export default function SelectPlanPage() {
   const navigate = useNavigate();
   const { user, updatePlan } = useAuth();
-  const [annual, setAnnual] = useState(false);
+  const [selected, setSelected] = useState<PlanType>('business');
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  if (!user) return <Navigate to="/login" replace />;
+  const current = plans.find(p => p.key === selected)!;
 
-  const plans: { key: PlanType; name: string; price: number; desc: string; popular: boolean; features: string[]; cta: string }[] = [
-    {
-      key: 'starter', name: 'Starter', price: 0, desc: 'Hasta 5 empleados', popular: false,
-      features: ['Fichaje con GPS', 'Anti-fraude (pulsación larga)', 'PWA instalable', 'Panel admin básico', 'Historial 30 días', '1 zona de geofencing', 'Branding ClockIn'],
-      cta: 'Empezar gratis',
-    },
-    {
-      key: 'business', name: 'Business', price: annual ? 23 : 29, desc: 'Hasta 25 empleados', popular: true,
-      features: ['Todo lo de Starter', 'Historial ilimitado', 'Departamentos y equipos', 'Turnos configurables', 'Zonas ilimitadas', 'Alertas completas', 'Reportes CSV/PDF', 'Sin branding', 'Soporte prioritario'],
-      cta: 'Seleccionar Business',
-    },
-    {
-      key: 'enterprise', name: 'Enterprise', price: annual ? 47 : 59, desc: 'Hasta 100 empleados', popular: false,
-      features: ['Todo lo de Business', 'Múltiples centros', 'API completa', 'Webhooks', 'Exportación contable', 'Calendario ausencias', 'White-label', 'Soporte dedicado'],
-      cta: 'Seleccionar Enterprise',
-    },
-  ];
-
-  const selectPlan = (plan: PlanType) => {
-    if (plan !== 'starter') {
-      toast.info('En producción se conectaría con Stripe para el pago. Se activa como demo.');
-    }
-    updatePlan(plan);
-    toast.success(`Plan ${plan.charAt(0).toUpperCase() + plan.slice(1)} activado`);
+  const confirm = () => {
+    updatePlan(selected);
+    toast.success(`Plan ${current.name} activado`);
     navigate(user.needsOnboarding ? '/onboarding' : '/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center p-6">
-      <div className="flex items-center gap-2 font-bold text-lg mt-8 mb-10">
-        <Wordmark size="sm" />
-      </div>
+    <div className="min-h-screen bg-panel px-6 py-8">
+      <div className="mx-auto flex max-w-[1080px] flex-col items-center">
+        <Wordmark size="md" />
+        <h1 className="mt-10 text-center font-display text-[clamp(2rem,4vw,3rem)] font-extrabold leading-tight tracking-[-0.03em]">Elige cómo quieres empezar</h1>
+        <p className="mt-2 text-center text-[17px] text-muted-foreground">Puedes cambiar de plan cuando quieras, sin permanencia.</p>
 
-      <h1 className="text-2xl md:text-3xl font-bold text-center mb-2">Elige tu plan</h1>
-      <p className="text-muted-foreground text-center mb-6">Puedes cambiarlo en cualquier momento.</p>
+        <div role="radiogroup" className="mt-10 grid w-full gap-5" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+          {plans.map(p => {
+            const on = p.key === selected;
+            return (
+              <button
+                key={p.key}
+                role="radio"
+                aria-checked={on}
+                onClick={() => setSelected(p.key)}
+                className={cn('rounded-[24px] border-2 p-7 text-left transition', on ? 'border-foreground bg-foreground text-primary-foreground shadow-elevated' : 'border-border bg-background hover:border-muted-foreground')}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-display text-[22px] font-extrabold">{p.name}</p>
+                    <p className={cn('text-sm', on ? 'text-[#A1A1AA]' : 'text-muted-foreground')}>{p.desc}</p>
+                  </div>
+                  <span className={cn('mt-1 flex h-6 w-6 items-center justify-center rounded-full border-2', on ? 'border-brand bg-brand' : 'border-[#A1A1AA]')}>
+                    {on && <span className="h-2 w-2 rounded-full bg-background" />}
+                  </span>
+                </div>
+                <p className="mt-5"><span className="font-display text-[40px] font-extrabold tabular-nums">{p.price} €</span><span className={on ? 'text-[#A1A1AA]' : 'text-muted-foreground'}> /mes</span></p>
+                <ul className="mt-5 space-y-2.5">
+                  {p.features.map(f => (
+                    <li key={f} className="flex items-start gap-2 text-[15px]">
+                      <Check className={cn('mt-0.5 h-4 w-4 flex-shrink-0', on ? 'text-primary-foreground' : 'text-foreground')} />{f}
+                    </li>
+                  ))}
+                </ul>
+              </button>
+            );
+          })}
+        </div>
 
-      <div className="flex items-center gap-3 mb-8">
-        <span className={annual ? 'text-muted-foreground' : 'font-medium'}>Mensual</span>
-        <button onClick={() => setAnnual(!annual)} className={`relative w-12 h-6 rounded-full transition-colors ${annual ? 'bg-foreground' : 'bg-border'}`}>
-          <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-background transition-transform ${annual ? 'translate-x-6' : 'translate-x-0.5'}`} />
-        </button>
-        <span className={annual ? 'font-medium' : 'text-muted-foreground'}>Anual <Badge variant="secondary" className="ml-1 text-xs">-20%</Badge></span>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6 max-w-5xl w-full">
-        {plans.map(plan => (
-          <div key={plan.key} className={`rounded-xl border p-6 relative ${plan.popular ? 'border-foreground shadow-elevated' : ''}`}>
-            {plan.popular && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">Popular</Badge>}
-            <h3 className="text-xl font-bold">{plan.name}</h3>
-            <p className="text-muted-foreground text-sm mb-4">{plan.desc}</p>
-            <div className="mb-6">
-              <span className="text-4xl font-bold">€{plan.price}</span>
-              <span className="text-muted-foreground">/mes</span>
-            </div>
-            <ul className="space-y-2 mb-8">
-              {plan.features.map(f => (
-                <li key={f} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 mt-0.5 text-success flex-shrink-0" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-            <Button
-              variant={plan.popular ? 'default' : 'outline'}
-              className="w-full rounded-full gap-2"
-              size="lg"
-              onClick={() => selectPlan(plan.key)}
-            >
-              {plan.cta} <ArrowRight className="w-4 h-4" />
-            </Button>
-          </div>
-        ))}
+        <Button onClick={confirm} className="mt-10 h-[52px] px-8 text-[15px]">Continuar con {current.name}</Button>
+        <p className="mt-3 text-[13px] text-muted-foreground">Los planes de pago incluyen 14 días gratis</p>
       </div>
     </div>
   );
