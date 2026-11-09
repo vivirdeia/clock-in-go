@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LogoIcon from '@/components/LogoIcon';
+import Wordmark from "@/components/Wordmark";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -65,7 +65,7 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center p-6">
       <div className="flex items-center gap-2 font-semibold text-lg mt-8 mb-4">
-        <LogoIcon className="w-5 h-5" />CLOCKIN
+        <Wordmark size="sm" />
       </div>
       <p className="text-sm text-muted-foreground mb-8">Configura tu cuenta en 30 segundos</p>
 

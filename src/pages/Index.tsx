@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, ShieldCheck, Target, LayoutDashboard, Download, Smartphone, Fingerprint, ArrowRight, Star, Check, ChevronDown, Menu, X } from 'lucide-react';
-import LogoIcon from '@/components/LogoIcon';
+import Wordmark from "@/components/Wordmark";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -147,7 +147,7 @@ const LandingPage = () => {
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b">
         <div className="container flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-            <LogoIcon className="w-5 h-5" />CLOCKIN
+            <Wordmark size="sm" />
           </Link>
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Características</a>
@@ -381,7 +381,7 @@ const LandingPage = () => {
         <div className="container">
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-10">
             <div>
-              <div className="flex items-center gap-2 font-bold text-lg mb-4"><LogoIcon className="w-5 h-5" />CLOCKIN</div>
+              <div className="mb-4"><Wordmark size="sm" /></div>
               <p className="text-sm text-muted-foreground">Fichaje con GPS para PYMEs. Simple, legal y sin hardware.</p>
             </div>
             {[

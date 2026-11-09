@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { Fingerprint, Check, LogOut, History } from 'lucide-react';
-import LogoIcon from '@/components/LogoIcon';
+import Wordmark from '@/components/Wordmark';
 import { useAuth } from '@/store/AuthContext';
 import { useDataStore } from '@/store/dataStore';
 import { findEmployeeByPinAcrossAllAdmins, getDatasetReadOnly, patchDatasetReadOnly } from '@/store/dataStore';
@@ -35,8 +35,7 @@ function PinScreen({ onSuccess }: { onSuccess: (empId: string) => void }) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
       <div className="flex items-center gap-2 text-muted-foreground mb-12">
-        <LogoIcon className="w-5 h-5" />
-        <span className="font-semibold">CLOCKIN</span>
+        <Wordmark size="sm" />
       </div>
       <h2 className="text-xl font-semibold mb-8">Introduce tu PIN</h2>
       <div className={`flex gap-3 mb-8 ${error ? 'animate-shake' : ''}`}>
@@ -168,8 +167,7 @@ function ClockScreen({ employeeId }: { employeeId: string }) {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-between p-6 select-none">
       <div className="flex items-center gap-2 text-muted-foreground pt-4">
-        <LogoIcon className="w-4 h-4" />
-        <span className="font-semibold text-sm tracking-wider">CLOCKIN</span>
+        <Wordmark size="sm" />
       </div>
 
       <div className="flex flex-col items-center">
