@@ -4,14 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { PageHeader, Panel, DialogHead, DialogActions, Field, inputCls, textareaCls } from '@/components/admin/kit';
 import { useDataStore } from '@/store/dataStore';
 import { toast } from 'sonner';
 import { useAuth, PlanType } from '@/store/AuthContext';
-import { Check, Plus, Trash2 } from 'lucide-react';
+import { Clock, Plus, Trash2 } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, updatePlan } = useAuth();
@@ -23,6 +22,17 @@ export default function SettingsPage() {
   const [newShiftEnd, setNewShiftEnd] = useState('');
   const [newShiftBreak, setNewShiftBreak] = useState('30');
   const [newShiftTolerance, setNewShiftTolerance] = useState('5');
+
+  const toMin = (v: string) => { const [h, mm] = v.split(':').map(Number); return h * 60 + mm; };
+  const hasTimes = Boolean(newShiftStart && newShiftEnd);
+  const sMin = hasTimes ? toMin(newShiftStart) : 0;
+  const eMin = hasTimes ? toMin(newShiftEnd) : 0;
+  const dur = hasTimes ? (eMin - sMin + 1440) % 1440 : 0;
+  const eff = Math.max(0, dur - (Number(newShiftBreak) || 0));
+  const lateM = (sMin + (Number(newShiftTolerance) || 0)) % 1440;
+  const lateTime = `${String(Math.floor(lateM / 60)).padStart(2, '0')}:${String(lateM % 60).padStart(2, '0')}`;
+  const hrs = (m: number) => (m / 60).toLocaleString('es-ES', { maximumFractionDigits: 2 });
+  const segs = !hasTimes || dur === 0 ? [] : eMin > sMin ? [{ a: sMin, b: eMin }] : [{ a: sMin, b: 1440 }, { a: 0, b: eMin }];
 
   const handleAddShift = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,59 +57,57 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Configuración</h2>
+      <PageHeader title="Configuración" subtitle="Los cambios se guardan solos" />
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="shifts">Turnos</TabsTrigger>
-          <TabsTrigger value="alerts">Alertas</TabsTrigger>
-          <TabsTrigger value="security">Seguridad</TabsTrigger>
-          <TabsTrigger value="billing">Plan</TabsTrigger>
-          <TabsTrigger value="legal">Legal</TabsTrigger>
+        <TabsList className="mb-6 h-auto w-fit max-w-full flex-wrap justify-start gap-1 rounded-[24px] bg-secondary p-1 sm:rounded-full">
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="general">General</TabsTrigger>
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="shifts">Turnos</TabsTrigger>
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="alerts">Avisos</TabsTrigger>
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="security">Seguridad</TabsTrigger>
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="billing">Plan</TabsTrigger>
+          <TabsTrigger className="h-9 rounded-full px-4 text-sm font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none" value="legal">Legal</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="bg-background rounded-card border p-6 space-y-4">
+        <TabsContent value="general" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
           <div className="grid sm:grid-cols-2 gap-4">
-            <div><label className="text-sm font-medium">Nombre de la empresa</label><Input value={settings.companyName} onChange={e => updateSettings({ companyName: e.target.value })} /></div>
-            <div><label className="text-sm font-medium">CIF</label><Input value={settings.cif} onChange={e => updateSettings({ cif: e.target.value })} /></div>
-            <div><label className="text-sm font-medium">Zona horaria</label>
-              <Select value={settings.timezone} onValueChange={v => updateSettings({ timezone: v })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="europe_madrid">Europe/Madrid</SelectItem><SelectItem value="atlantic_canary">Atlantic/Canary</SelectItem></SelectContent>
-              </Select>
+            <div><label className="block text-sm font-semibold mb-1.5">Nombre de la empresa</label><Input className={inputCls} value={settings.companyName} onChange={e => updateSettings({ companyName: e.target.value })} /></div>
+            <div><label className="block text-sm font-semibold mb-1.5">CIF</label><Input className={inputCls} value={settings.cif} onChange={e => updateSettings({ cif: e.target.value })} /></div>
+            <div><label className="block text-sm font-semibold mb-1.5">Zona horaria</label>
+              <select className={inputCls} value={settings.timezone} onChange={e => updateSettings({ timezone: e.target.value })}>
+                <option value="europe_madrid">Europe/Madrid</option><option value="atlantic_canary">Atlantic/Canary</option>
+              </select>
             </div>
-            <div><label className="text-sm font-medium">Formato hora</label>
-              <Select value={settings.timeFormat} onValueChange={v => updateSettings({ timeFormat: v as '24h' | '12h' })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="24h">24 horas</SelectItem><SelectItem value="12h">12 horas</SelectItem></SelectContent>
-              </Select>
+            <div><label className="block text-sm font-semibold mb-1.5">Formato hora</label>
+              <select className={inputCls} value={settings.timeFormat} onChange={e => updateSettings({ timeFormat: e.target.value as '24h' | '12h' })}>
+                <option value="24h">24 horas</option><option value="12h">12 horas</option>
+              </select>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">Los cambios se guardan automáticamente.</p>
         </TabsContent>
 
-        <TabsContent value="shifts" className="bg-background rounded-card border p-6 space-y-4">
-          <h3 className="font-semibold">Turnos configurados</h3>
+        <TabsContent value="shifts" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
+          <h3 className="text-lg font-semibold">Turnos configurados</h3>
           <div className="space-y-3">
             {shifts.map(s => (
               <div key={s.id} className="flex items-center justify-between py-3 border-b">
                 <div>
-                  <p className="font-medium">{s.name}</p>
+                  <p className="text-[15px] font-semibold">{s.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {s.startTime ? `${s.startTime} - ${s.endTime} (${s.breakMinutes}min pausa, ${s.lateToleranceMinutes}min tolerancia)` : 'Sin hora fija'}
+                    {s.startTime ? `${s.startTime} a ${s.endTime} · ${s.breakMinutes} min de pausa · ${s.lateToleranceMinutes} min de margen` : 'Sin hora fija'}
                   </p>
                 </div>
-                <Button variant="ghost" size="sm" className="text-destructive gap-1" onClick={() => { deleteShift(s.id); toast.success(`Turno "${s.name}" eliminado`); }}>
-                  <Trash2 className="w-3 h-3" />Eliminar
+                <Button variant="outline" size="icon" aria-label={`Eliminar turno ${s.name}`} className="h-10 w-10 shrink-0 rounded-full border-border text-muted-foreground hover:text-destructive" onClick={() => { deleteShift(s.id); toast.success(`Turno "${s.name}" eliminado`); }}>
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             ))}
           </div>
-          <Button variant="outline" className="gap-2" onClick={() => setShowAddShift(true)}><Plus className="w-4 h-4" strokeWidth={1.5} />Nuevo turno</Button>
+          <Button variant="outline" className="h-11 gap-2" onClick={() => setShowAddShift(true)}><Plus className="w-4 h-4" strokeWidth={1.5} />Nuevo turno</Button>
         </TabsContent>
 
-        <TabsContent value="alerts" className="bg-background rounded-card border p-6 space-y-4">
-          <h3 className="font-semibold">Configuración de alertas</h3>
+        <TabsContent value="alerts" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
+          <h3 className="text-lg font-semibold">Configuración de alertas</h3>
           {[
             { label: 'Fichaje fuera de zona', key: 'alertOutZone' as const },
             { label: 'Retardo (según tolerancia del turno)', key: 'alertLate' as const },
@@ -113,8 +121,8 @@ export default function SettingsPage() {
           ))}
         </TabsContent>
 
-        <TabsContent value="security" className="bg-background rounded-card border p-6 space-y-4">
-          <h3 className="font-semibold">Seguridad del fichaje</h3>
+        <TabsContent value="security" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
+          <h3 className="text-lg font-semibold">Seguridad del fichaje</h3>
           <div className="flex items-center justify-between py-2 border-b">
             <p className="text-sm font-medium">Requerir GPS para fichar</p>
             <Switch checked={settings.requireGps} onCheckedChange={v => updateSettings({ requireGps: v })} />
@@ -136,62 +144,69 @@ export default function SettingsPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="billing" className="bg-background rounded-card border p-6 space-y-4">
-          <h3 className="font-semibold">Tu plan</h3>
-          <div className="bg-secondary rounded-md p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <Badge>{(user?.plan || 'starter').toUpperCase()}</Badge>
-              <span className="text-2xl font-semibold">
-                €{user?.plan === 'enterprise' ? 59 : user?.plan === 'business' ? 29 : 0}
-                <span className="text-sm font-normal text-muted-foreground">/mes</span>
-              </span>
-            </div>
-          </div>
-          <h4 className="font-medium text-sm mt-2">Cambiar plan</h4>
-          <div className="grid sm:grid-cols-3 gap-3">
+        <TabsContent value="billing" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
+          <h3 className="text-lg font-semibold">Tu plan</h3>
+          <div className="grid gap-4 sm:grid-cols-3">
             {([
               { key: 'starter' as PlanType, name: 'Starter', price: 0, desc: 'Hasta 5 empleados, 1 zona' },
               { key: 'business' as PlanType, name: 'Business', price: 29, desc: 'Hasta 25 empleados, 10 zonas' },
               { key: 'enterprise' as PlanType, name: 'Enterprise', price: 59, desc: 'Hasta 100 empleados, ilimitado' },
-            ]).map(plan => (
-              <button key={plan.key} onClick={() => { updatePlan(plan.key); toast.success(`Plan cambiado a ${plan.name}`); }}
-                className={`rounded-md border p-4 text-left transition-colors ${user?.plan === plan.key ? 'border-foreground bg-secondary' : 'hover:bg-secondary/50'}`}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{plan.name}</span>
-                  {user?.plan === plan.key && <Check className="w-4 h-4" strokeWidth={1.5} />}
+            ]).map(plan => {
+              const current = (user?.plan || 'starter') === plan.key;
+              return (
+                <div key={plan.key} className={`flex flex-col rounded-[20px] border p-5 ${current ? 'bg-primary text-primary-foreground border-primary' : 'bg-background'}`}>
+                  <div className="flex min-h-7 flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-base font-semibold">{plan.name}</h4>
+                    {current && <span className="rounded-full bg-brand-tint px-2.5 py-1 text-[10px] font-bold text-brand-ink">TU PLAN</span>}
+                  </div>
+                  <p className="mt-4 font-display font-extrabold text-[32px] tabular-nums">{plan.price} €<span className="text-sm font-normal opacity-70"> /mes</span></p>
+                  <p className={`mt-1 flex-1 text-[13px] ${current ? 'text-subtle' : 'text-muted-foreground'}`}>{plan.desc}</p>
+                  {!current && (
+                    <Button variant="outline" className="mt-5 h-11 w-full" onClick={() => { updatePlan(plan.key); toast.success(`Plan cambiado a ${plan.name}`); }}>Cambiar a {plan.name}</Button>
+                  )}
                 </div>
-                <p className="text-lg font-semibold">€{plan.price}<span className="text-xs font-normal text-muted-foreground">/mes</span></p>
-                <p className="text-xs text-muted-foreground">{plan.desc}</p>
-              </button>
-            ))}
+              );
+            })}
           </div>
         </TabsContent>
 
-        <TabsContent value="legal" className="bg-background rounded-card border p-6 space-y-4">
-          <h3 className="font-semibold">Texto de consentimiento RGPD</h3>
-          <Textarea rows={5} value={settings.consentText} onChange={e => updateSettings({ consentText: e.target.value })} />
+        <TabsContent value="legal" className="mt-0 max-w-[880px] rounded-[24px] border bg-background p-5 sm:p-7 space-y-5">
+          <h3 className="text-lg font-semibold">Texto de consentimiento RGPD</h3>
+          <Textarea className={textareaCls} rows={5} value={settings.consentText} onChange={e => updateSettings({ consentText: e.target.value })} />
           <div className="flex items-center justify-between py-2">
             <p className="text-sm font-medium">Requerir aceptación en primer fichaje</p>
             <Switch checked={settings.requireConsent} onCheckedChange={v => updateSettings({ requireConsent: v })} />
           </div>
-          <Button variant="outline" onClick={downloadConsentPDF}>Descargar plantilla PDF</Button>
+          <Button variant="outline" className="h-11" onClick={downloadConsentPDF}>Descargar plantilla PDF</Button>
         </TabsContent>
       </Tabs>
 
       <Dialog open={showAddShift} onOpenChange={setShowAddShift}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Nuevo turno</DialogTitle></DialogHeader>
-          <form onSubmit={handleAddShift} className="space-y-4">
-            <div><label className="text-sm font-medium">Nombre *</label><Input value={newShiftName} onChange={e => setNewShiftName(e.target.value)} required placeholder="Ej: Noche" /></div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Hora inicio</label><Input type="time" value={newShiftStart} onChange={e => setNewShiftStart(e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Hora fin</label><Input type="time" value={newShiftEnd} onChange={e => setNewShiftEnd(e.target.value)} /></div>
+          <DialogHead icon={Clock} tint="blue" title="Nuevo turno" />
+          <form onSubmit={handleAddShift} className="min-w-0 space-y-5">
+            <Field label="Nombre"><input className={inputCls} value={newShiftName} onChange={e => setNewShiftName(e.target.value)} required placeholder="Ej.: Noche" /></Field>
+            <div className="grid min-w-0 grid-cols-2 gap-4">
+              <Field label="Hora inicio"><input className={`${inputCls} min-w-0`} type="time" value={newShiftStart} onChange={e => setNewShiftStart(e.target.value)} /></Field>
+              <Field label="Hora fin"><input className={`${inputCls} min-w-0`} type="time" value={newShiftEnd} onChange={e => setNewShiftEnd(e.target.value)} /></Field>
+              <Field label="Pausa (min)"><input className={inputCls} type="number" min={0} value={newShiftBreak} onChange={e => setNewShiftBreak(e.target.value)} /></Field>
+              <Field label="Margen de llegada (min)"><input className={inputCls} type="number" min={0} value={newShiftTolerance} onChange={e => setNewShiftTolerance(e.target.value)} /></Field>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-sm font-medium">Pausa (min)</label><Input type="number" value={newShiftBreak} onChange={e => setNewShiftBreak(e.target.value)} /></div>
-              <div><label className="text-sm font-medium">Tolerancia (min)</label><Input type="number" value={newShiftTolerance} onChange={e => setNewShiftTolerance(e.target.value)} /></div>
+            <div className="space-y-2">
+              <div className="relative h-3 overflow-hidden rounded-full bg-secondary" role="img" aria-label="Tramo del turno en 24 horas">
+                {segs.map(g => <span key={g.a} className="absolute inset-y-0 bg-brand" style={{ left: `${(g.a / 1440) * 100}%`, width: `${((g.b - g.a) / 1440) * 100}%` }} />)}
+              </div>
+              <div className="flex justify-between text-[11px] text-muted-foreground tabular-nums">
+                {['00:00', '06:00', '12:00', '18:00', '24:00'].map(t => <span key={t}>{t}</span>)}
+              </div>
+              <p className="text-[13px] text-muted-foreground" aria-live="polite">
+                {hasTimes ? `${hrs(dur)} h de jornada, ${hrs(eff)} efectivas. Retraso a partir de las ${lateTime}.` : 'Elige la hora de inicio y de fin para ver la jornada.'}
+              </p>
             </div>
-            <Button type="submit" className="w-full">Guardar turno</Button>
+            <DialogActions>
+              <Button type="button" variant="outline" className="h-11 border-border" onClick={() => setShowAddShift(false)}>Cancelar</Button>
+              <Button type="submit" className="h-11">Guardar turno</Button>
+            </DialogActions>
           </form>
         </DialogContent>
       </Dialog>
