@@ -83,6 +83,7 @@ interface DataStoreContextValue extends DataState {
   deleteZone: (id: string) => void;
   // Clock records (immutable: only insert)
   addClockRecord: (data: { employeeId: string; lat: number; lng: number; address: string; accuracy: number; type?: 'entry' | 'exit' }) => ClockRecord;
+  addEmployeeNote: (recordId: string, note: string) => void;
   addCorrectionRecord: (originalId: string, patch: { timestamp?: string; type?: 'entry' | 'exit'; address?: string }) => ClockRecord | null;
   // Alerts
   markAlertRead: (id: string) => void;
@@ -244,6 +245,14 @@ export function DataStoreProvider({ adminId, fallbackCompany = '', fallbackCif, 
     return correction;
   };
 
+  const addEmployeeNote: DataStoreContextValue['addEmployeeNote'] = (recordId, note) => {
+    update(s => ({
+      ...s,
+      clockRecords: s.clockRecords.map(r => (r.id === recordId ? { ...r, employeeNote: note } : r)),
+      alerts: s.alerts.map(a => (a.recordId === recordId ? { ...a, employeeNote: note } : a)),
+    }));
+  };
+
   // ============ Alerts ============
   const markAlertRead: DataStoreContextValue['markAlertRead'] = (id) => {
     update(s => ({ ...s, alerts: s.alerts.map(a => (a.id === id ? { ...a, status: 'read' } : a)) }));
@@ -303,7 +312,7 @@ export function DataStoreProvider({ adminId, fallbackCompany = '', fallbackCif, 
       addDepartment, updateDepartment, deleteDepartment,
       addShift, deleteShift,
       addZone, updateZone, deleteZone,
-      addClockRecord, addCorrectionRecord,
+      addClockRecord, addCorrectionRecord, addEmployeeNote,
       markAlertRead, resolveAlert,
       updateSettings,
       getEmployee, getDepartment, getShift, getEmployeesByDepartment,
