@@ -208,6 +208,26 @@ function HeroVisual() {
   );
 }
 
+/** Escala la composición (540x580) para que quepa en pantallas estrechas sin deformarse */
+function FitHero() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [k, setK] = useState(1);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([e]) => setK(Math.min(1, e.contentRect.width / 540)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className="w-full" style={{ height: 580 * k }}>
+      <div className="mx-auto" style={{ width: 540 * k }}>
+        <div style={{ width: 540, transform: `scale(${k})`, transformOrigin: 'top left' }}><HeroVisual /></div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== LIVE TICKER ====================
 const liveItems = [
   { name: 'Carlos M.', text: 'Entrada 08:01 · Oficina Central', ok: true },
@@ -425,9 +445,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="flex-1 basis-[420px] min-w-0">
-            <div className="origin-top scale-[.72] -mb-[160px] sm:scale-100 sm:mb-0">
-              <HeroVisual />
-            </div>
+            <FitHero />
           </div>
         </Container>
       </section>
