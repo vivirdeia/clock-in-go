@@ -39,6 +39,9 @@
     --violet-tint: 251 91% 95%;
     --violet-ink: 263 70% 50%;
     --panel: 0 0% 98%;
+    --graphite: 240 4% 16%;
+    --subtle: 240 5% 65%;
+    --subtle-light: 240 5% 84%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
     --ring: 221 83% 53%;
@@ -109,4 +112,37 @@
   50% {
     filter: drop-shadow(0 0 14px rgba(255,255,255,1));
   }
+}
+
+/* ===== Landing (rebrand) ===== */
+@keyframes ci-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ci-pulse{0%{transform:scale(.55);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+@keyframes ci-ring{0%,8%{stroke-dashoffset:503}48%,100%{stroke-dashoffset:0}}
+@keyframes ci-hint{0%,46%{opacity:1}52%,94%{opacity:0}100%{opacity:1}}
+@keyframes ci-toast{0%,46%{opacity:0;transform:translateY(6px)}52%,94%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ci-press{0%,8%{transform:scale(1)}20%,46%{transform:scale(1.06)}52%,100%{transform:scale(1)}}
+@keyframes ci-drop{0%{opacity:0;transform:translateY(-24px)}12%,100%{opacity:1;transform:none}}
+@keyframes ci-slide{0%{opacity:0;transform:translateX(24px)}100%{opacity:1;transform:none}}
+@keyframes ci-marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes ci-grow{0%{width:10%}100%{width:73%}}
+@keyframes ci-blink{0%,100%{opacity:1}50%{opacity:.35}}
+.ci-float{animation:ci-float 6s ease-in-out infinite}
+.ci-float2{animation:ci-float 7s ease-in-out -2s infinite}
+.ci-pulse{animation:ci-pulse 2.4s ease-out infinite}
+.ci-ring{animation:ci-ring 5s ease-in-out infinite}
+.ci-hint{animation:ci-hint 5s ease-in-out infinite}
+.ci-toast{animation:ci-toast 5s ease-in-out infinite}
+.ci-press{animation:ci-press 5s ease-in-out infinite}
+.ci-drop{animation:ci-drop 1s cubic-bezier(.2,.9,.3,1.2) both}
+.ci-slide{animation:ci-slide .8s ease-out .6s both}
+.ci-marquee{animation:ci-marquee 40s linear infinite}
+.ci-grow{animation:ci-grow 2.4s ease-out .4s both}
+.ci-blink{animation:ci-blink 1.6s infinite}
+.ci-wait .ci-drop,.ci-wait .ci-slide{animation-play-state:paused}
+@media (prefers-reduced-motion: reduce){
+  .ci-float,.ci-float2,.ci-pulse,.ci-ring,.ci-hint,.ci-toast,.ci-press,.ci-drop,.ci-slide,.ci-marquee,.ci-grow,.ci-blink{animation:none!important}
+  .ci-ring{stroke-dashoffset:0}
+  .ci-hint{opacity:0}
+  .ci-toast{opacity:1}
+  .ci-grow{width:73%}
 }
