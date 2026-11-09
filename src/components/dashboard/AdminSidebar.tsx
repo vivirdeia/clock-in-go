@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ClipboardList, Users, Building2, MapPin, Bell, FileDown, Settings, LogOut, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import LogoIcon from '@/components/LogoIcon';
+import Wordmark from '@/components/Wordmark';
 import { Badge } from '@/components/ui/badge';
 import { useDataStore } from '@/store/dataStore';
 import { useAuth } from '@/store/AuthContext';
@@ -46,8 +47,7 @@ export default function AdminSidebar({ collapsed, setCollapsed, mobileOpen, setM
     <>
       {/* Logo */}
       <div className="h-16 flex items-center px-4 border-b gap-2">
-        <LogoIcon className="w-5 h-5 flex-shrink-0" />
-        {(!collapsed || mobileOpen) && <span className="font-bold text-lg">CLOCKIN</span>}
+        {(!collapsed || mobileOpen) ? <Wordmark size="sm" /> : <LogoIcon className="w-6 h-6 flex-shrink-0" />}
         {mobileOpen && (
           <button onClick={() => setMobileOpen(false)} className="ml-auto md:hidden p-1">
             <X className="w-5 h-5" />
