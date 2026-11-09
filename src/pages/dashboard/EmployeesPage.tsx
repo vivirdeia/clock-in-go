@@ -176,7 +176,7 @@ export default function EmployeesPage() {
           <input type="search" aria-label="Buscar empleados por nombre o email" placeholder="Buscar por nombre o email" value={query} onChange={e => setQuery(e.target.value)}
             className="h-11 w-full rounded-full border bg-background pl-11 pr-4 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring" />
         </div>
-        <Segmented value={view} onChange={setView} options={[
+        <Segmented<"table" | "grid"> value={view} onChange={setView} options={[
           { value: 'table', label: <span className="flex items-center" aria-label="Vista de tabla"><List className="h-4 w-4" /></span> },
           { value: 'grid', label: <span className="flex items-center" aria-label="Vista de cuadrícula"><LayoutGrid className="h-4 w-4" /></span> },
         ]} />
