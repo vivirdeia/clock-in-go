@@ -84,7 +84,7 @@ interface DataStoreContextValue extends DataState {
   // Clock records (immutable: only insert)
   addClockRecord: (data: { employeeId: string; lat: number; lng: number; address: string; accuracy: number; type?: 'entry' | 'exit' }) => ClockRecord;
   addEmployeeNote: (recordId: string, note: string) => void;
-  addCorrectionRecord: (originalId: string, patch: { timestamp?: string; type?: 'entry' | 'exit'; address?: string; reason?: string }) => ClockRecord | null;
+  addCorrectionRecord: (originalId: string, patch: { timestamp?: string; type?: 'entry' | 'exit'; address?: string; reason?: string; correctedBy?: string }) => ClockRecord | null;
   // Alerts
   markAlertRead: (id: string) => void;
   resolveAlert: (id: string, note: string) => void;
@@ -239,6 +239,8 @@ export function DataStoreProvider({ adminId, fallbackCompany = '', fallbackCif, 
       type: patch.type ?? original.type,
       address: patch.address ?? original.address,
       reason: patch.reason,
+      correctedBy: patch.correctedBy,
+      correctedAt: new Date().toISOString(),
       correctsId: originalId,
       editedByAdmin: true,
     };

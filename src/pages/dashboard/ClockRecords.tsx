@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Bell, Check, Download, Info, Pencil, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/store/AuthContext';
 
 function ZoneStatus({ inZone }: { inZone: boolean }) {
   return (
@@ -21,6 +22,7 @@ function ZoneStatus({ inZone }: { inZone: boolean }) {
 
 export default function ClockRecordsPage() {
   const { clockRecords, departments, getEmployee, getDepartment, addCorrectionRecord } = useDataStore();
+  const { user } = useAuth();
   const [deptFilter, setDeptFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -71,7 +73,7 @@ export default function ClockRecordsPage() {
     if (!correctingId) return;
     const date = new Date(correctTime);
     if (Number.isNaN(date.getTime())) { toast.error('Introduce una fecha y hora válidas'); return; }
-    const c = addCorrectionRecord(correctingId, { timestamp: date.toISOString(), type: correctType, reason: reason.trim() || undefined });
+    const c = addCorrectionRecord(correctingId, { timestamp: date.toISOString(), type: correctType, reason: reason.trim() || undefined, correctedBy: user ? `${user.name} (${user.email})` : undefined });
     if (!c) { toast.error('No se ha encontrado el fichaje original'); return; }
     setCorrectingId(null); setSelectedId(c.id);
     toast.success('Corrección registrada (el original se conserva)');
@@ -174,6 +176,11 @@ export default function ClockRecordsPage() {
                   <p className="mb-1 font-semibold">Motivo de la corrección</p>
                   <p className="text-muted-foreground">{sel.reason}</p>
                 </div>
+              )}
+              {sel.correctsId && (
+                <p className="text-[13px] text-muted-foreground">
+                  Corregido por {sel.correctedBy || 'un administrador'}{sel.correctedAt && ` el ${new Date(sel.correctedAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })} a las ${new Date(sel.correctedAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}
+                </p>
               )}
               <Button variant="outline" className="h-11 w-full gap-2" onClick={() => startCorrection(sel)}><Pencil className="h-4 w-4" />Añadir corrección</Button>
               <p className="text-[13px] leading-relaxed text-muted-foreground">Los fichajes no se modifican: una corrección añade un registro nuevo y el original se conserva.</p>
