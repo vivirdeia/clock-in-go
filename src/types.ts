@@ -45,6 +45,8 @@ export interface ClockRecord {
   correctsId?: string;
   /** True when created/edited by an admin, not by the employee. */
   editedByAdmin?: boolean;
+  /** Motivo indicado por el empleado (p. ej. al fichar fuera de zona). */
+  employeeNote?: string;
 }
 
 export interface Zone {
@@ -71,6 +73,8 @@ export interface Alert {
   createdAt: string;
   /** Linked clock record when applicable. */
   recordId?: string;
+  /** Motivo indicado por el empleado. */
+  employeeNote?: string;
 }
 
 export interface CompanySettings {
