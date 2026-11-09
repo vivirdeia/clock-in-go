@@ -78,6 +78,8 @@ export default {
           ink: "hsl(var(--violet-ink))",
         },
         panel: "hsl(var(--panel))",
+        graphite: "hsl(var(--graphite))",
+        subtle: { DEFAULT: "hsl(var(--subtle))", light: "hsl(var(--subtle-light))" },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
