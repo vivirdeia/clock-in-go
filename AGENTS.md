@@ -1,0 +1,1 @@
+- Admin panel pages build on shared primitives in src/components/admin/kit.tsx (PageHeader, Panel, Segmented, DialogHead, EmptyState, PlanLimitDialog); why: keeps the 8 dashboard pages visually consistent.

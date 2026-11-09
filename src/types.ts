@@ -47,6 +47,8 @@ export interface ClockRecord {
   editedByAdmin?: boolean;
   /** Motivo indicado por el empleado (p. ej. al fichar fuera de zona). */
   employeeNote?: string;
+  /** Motivo de la corrección administrativa. */
+  reason?: string;
 }
 
 export interface Zone {

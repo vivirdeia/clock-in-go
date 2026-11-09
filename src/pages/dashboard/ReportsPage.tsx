@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useDataStore } from '@/store/dataStore';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, FileText, Clock, AlertTriangle, Timer, FileSpreadsheet } from 'lucide-react';
+import { PageHeader, Panel, Field, Segmented, IconTile, inputCls } from '@/components/admin/kit';
+import { Download, FileText, Clock, AlertTriangle, FileSpreadsheet, ShieldCheck, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatTime, formatShortDate } from '@/types';
 import { computeWorkedMinutes, formatHm } from '@/lib/alerts';
@@ -29,37 +29,37 @@ export default function ReportsPage() {
   const [format, setFormat] = useState('csv');
   const [deptFilter, setDeptFilter] = useState('all');
 
-  const periodFilter = (date: string) => {
+  const periodFilter = (date: string, selectedPeriod = period) => {
     const d = new Date(date);
     const now = new Date();
-    if (period === 'week') {
+    if (selectedPeriod === 'week') {
       const start = new Date(now); start.setDate(now.getDate() - 7);
       return d >= start;
     }
-    if (period === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-    if (period === 'last_month') {
+    if (selectedPeriod === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    if (selectedPeriod === 'last_month') {
       const last = new Date(now); last.setMonth(now.getMonth() - 1);
       return d.getMonth() === last.getMonth() && d.getFullYear() === last.getFullYear();
     }
-    if (period === 'quarter') {
+    if (selectedPeriod === 'quarter') {
       const start = new Date(now); start.setMonth(now.getMonth() - 3);
       return d >= start;
     }
     return true;
   };
 
-  const filteredRecs = () => {
-    let recs = clockRecords.filter(r => periodFilter(r.timestamp));
-    if (deptFilter !== 'all') {
-      recs = recs.filter(r => { const e = getEmployee(r.employeeId); return e?.departmentId === deptFilter; });
+  const filteredRecs = (selectedPeriod = period, selectedDept = deptFilter) => {
+    let recs = clockRecords.filter(r => periodFilter(r.timestamp, selectedPeriod));
+    if (selectedDept !== 'all') {
+      recs = recs.filter(r => { const e = getEmployee(r.employeeId); return e?.departmentId === selectedDept; });
     }
     return recs;
   };
 
-  const generateCSV = () => {
+  const generateCSV = (selectedType = reportType, selectedPeriod = period, selectedDept = deptFilter) => {
     const date = new Date().toISOString().split('T')[0];
-    if (reportType === 'records') {
-      const recs = filteredRecs();
+    if (selectedType === 'records') {
+      const recs = filteredRecs(selectedPeriod, selectedDept);
       const header = 'Empleado,Departamento,Tipo,Fecha,Hora,Dirección,En zona\n';
       const rows = recs.map(r => {
         const emp = getEmployee(r.employeeId);
@@ -70,9 +70,9 @@ export default function ReportsPage() {
       toast.success(`CSV descargado: ${recs.length} registros`);
       return;
     }
-    if (reportType === 'official') {
+    if (selectedType === 'official') {
       // Per-employee per-day: entry, exit, total
-      const recs = filteredRecs();
+      const recs = filteredRecs(selectedPeriod, selectedDept);
       const grouped: Record<string, Record<string, typeof recs>> = {};
       recs.forEach(r => {
         const day = r.timestamp.slice(0, 10);
@@ -96,11 +96,11 @@ export default function ReportsPage() {
       toast.success('Registro oficial descargado (compatible Inspección de Trabajo)');
       return;
     }
-    if (reportType === 'employee_summary') {
+    if (selectedType === 'employee_summary') {
       const header = 'Empleado,Departamento,Fichajes,Días trabajados,Horas totales,Fuera de zona\n';
       const rows = employees.map(e => {
         const dept = getDepartment(e.departmentId);
-        const recs = filteredRecs().filter(r => r.employeeId === e.id);
+        const recs = filteredRecs(selectedPeriod, selectedDept).filter(r => r.employeeId === e.id);
         const days = new Set(recs.map(r => r.timestamp.slice(0, 10)));
         let totalMins = 0;
         days.forEach(d => { totalMins += computeWorkedMinutes(recs.filter(r => r.timestamp.startsWith(d))); });
@@ -111,11 +111,11 @@ export default function ReportsPage() {
       toast.success('Resumen por empleado descargado');
       return;
     }
-    if (reportType === 'dept_summary') {
+    if (selectedType === 'dept_summary') {
       const header = 'Departamento,Empleados,Fichajes,Fuera de zona\n';
       const rows = departments.map(d => {
         const emps = employees.filter(e => e.departmentId === d.id);
-        const recs = filteredRecs().filter(r => emps.some(e => e.id === r.employeeId));
+        const recs = filteredRecs(selectedPeriod, selectedDept).filter(r => emps.some(e => e.id === r.employeeId));
         const outZone = recs.filter(r => !r.inZone).length;
         return `"${d.name}",${emps.length},${recs.length},${outZone}`;
       }).join('\n');
@@ -123,9 +123,9 @@ export default function ReportsPage() {
       toast.success('Resumen por departamento descargado');
       return;
     }
-    if (reportType === 'alerts') {
+    if (selectedType === 'alerts') {
       const header = 'Tipo,Empleado,Descripción,Estado,Fecha\n';
-      const rows = alerts.filter(a => periodFilter(a.createdAt)).map(a => {
+      const rows = alerts.filter(a => periodFilter(a.createdAt, selectedPeriod) && (selectedDept === 'all' || getEmployee(a.employeeId)?.departmentId === selectedDept)).map(a => {
         const emp = getEmployee(a.employeeId);
         return `"${a.type}","${emp?.name || ''}","${a.description}","${a.status}","${formatShortDate(a.createdAt)}"`;
       }).join('\n');
@@ -135,10 +135,10 @@ export default function ReportsPage() {
     }
   };
 
-  const generatePDF = () => {
+  const generatePDF = (selectedPeriod = period, selectedDept = deptFilter) => {
     const printWin = window.open('', '_blank');
     if (!printWin) { toast.error('Permite ventanas emergentes para generar el PDF'); return; }
-    const recs = filteredRecs();
+    const recs = filteredRecs(selectedPeriod, selectedDept);
     const rows = recs.slice(0, 100).map(r => {
       const emp = getEmployee(r.employeeId);
       return `<tr><td>${emp?.name || ''}</td><td>${r.type === 'entry' ? 'Entrada' : 'Salida'}</td><td>${formatShortDate(r.timestamp)}</td><td>${formatTime(r.timestamp)}</td><td>${r.address}</td><td>${r.inZone ? 'Sí' : 'No'}</td></tr>`;
@@ -150,73 +150,61 @@ export default function ReportsPage() {
   const handleExport = () => format === 'csv' ? generateCSV() : generatePDF();
 
   const quickReports = [
-    { name: 'Fichajes de hoy', format: 'CSV', action: () => { setReportType('records'); setPeriod('week'); setTimeout(generateCSV, 0); } },
-    { name: 'Registro oficial mensual', format: 'CSV', action: () => { setReportType('official'); setPeriod('month'); setTimeout(generateCSV, 0); } },
-    { name: 'Resumen mensual', format: 'PDF', action: () => { setPeriod('month'); setTimeout(generatePDF, 0); } },
-    { name: 'Alertas del mes', format: 'CSV', action: () => { setReportType('alerts'); setPeriod('month'); setTimeout(generateCSV, 0); } },
+    { name: 'Registro horario oficial', detail: `${new Date().toLocaleDateString('es-ES', { month: 'long' }).replace(/^./, c => c.toUpperCase())} · CSV · RD-ley 8/2019`, icon: ShieldCheck, featured: true, action: () => generateCSV('official', 'month', 'all') },
+    { name: 'Fichajes de la semana', detail: 'CSV', icon: Clock, featured: false, action: () => generateCSV('records', 'week', 'all') },
+    { name: 'Resumen mensual', detail: 'PDF', icon: FileText, featured: false, action: () => generatePDF('month', 'all') },
+    { name: 'Alertas del mes', detail: 'CSV', icon: Bell, featured: false, action: () => generateCSV('alerts', 'month', 'all') },
   ];
 
+  const recordCount = reportType === 'alerts'
+    ? alerts.filter(a => periodFilter(a.createdAt) && (deptFilter === 'all' || getEmployee(a.employeeId)?.departmentId === deptFilter)).length
+    : filteredRecs().length;
+
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Exportar informes</h2>
-
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {quickReports.map(r => (
-          <button key={r.name} onClick={r.action}
-            className="bg-background rounded-card border p-4 text-left hover:border-border-strong transition-colors">
-            <Download className="w-4 h-4 text-muted-foreground mb-2" strokeWidth={1.5} />
-            <p className="font-medium text-sm">{r.name}</p>
-            <p className="text-xs text-muted-foreground">{r.format}</p>
-          </button>
-        ))}
-      </div>
-
-      <div className="bg-background rounded-card border p-6 space-y-4">
-        <h3 className="font-semibold">Generar informe personalizado</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-8">
+      <PageHeader title="Informes" subtitle="Listos para tu gestoría o para una inspección de trabajo" />
+      <section aria-labelledby="quick-reports" className="space-y-4">
+        <h2 id="quick-reports" className="text-lg font-semibold">Descarga rápida</h2>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-4">
+          {quickReports.map(r => (
+            <button key={r.name} type="button" onClick={r.action}
+              className={`rounded-[20px] border p-[22px] text-left transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${r.featured ? 'bg-brand-tint border-brand/20 hover:border-brand/40' : 'bg-background hover:bg-secondary'}`}>
+              <IconTile icon={r.icon} tint={r.featured ? 'black' : 'gray'} size={44} />
+              <p className="mt-5 text-base font-semibold">{r.name}</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">{r.detail}</p>
+            </button>
+          ))}
+        </div>
+      </section>
+      <Panel className="rounded-[24px] p-6 space-y-6">
+        <h2 className="text-lg font-semibold">Informe a medida</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto] items-end">
+          <Field label="Tipo de informe">
+            <select className={inputCls} value={reportType} onChange={e => setReportType(e.target.value)}>
+              {reportTypes.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+            </select>
+          </Field>
+          <Field label="Periodo">
+            <select className={inputCls} value={period} onChange={e => setPeriod(e.target.value)}>
+              <option value="week">Esta semana</option><option value="month">Este mes</option><option value="last_month">Mes anterior</option><option value="quarter">Trimestre</option><option value="all">Todo</option>
+            </select>
+          </Field>
+          <Field label="Departamento">
+            <select className={inputCls} value={deptFilter} onChange={e => setDeptFilter(e.target.value)}>
+              <option value="all">Todos</option>
+              {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+          </Field>
           <div>
-            <label className="text-sm font-medium mb-1 block">Tipo de informe</label>
-            <Select value={reportType} onValueChange={setReportType}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>{reportTypes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1 block">Período</label>
-            <Select value={period} onValueChange={setPeriod}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">Esta semana</SelectItem>
-                <SelectItem value="month">Este mes</SelectItem>
-                <SelectItem value="last_month">Mes anterior</SelectItem>
-                <SelectItem value="quarter">Trimestre</SelectItem>
-                <SelectItem value="all">Todo</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1 block">Departamento</label>
-            <Select value={deptFilter} onValueChange={setDeptFilter}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {departments.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <label className="text-sm font-medium mb-1 block">Formato</label>
-            <div className="flex rounded-md border overflow-hidden h-10">
-              <button onClick={() => setFormat('csv')} className={`px-4 text-sm flex-1 ${format === 'csv' ? 'bg-foreground text-primary-foreground' : ''}`}>CSV</button>
-              <button onClick={() => setFormat('pdf')} className={`px-4 text-sm flex-1 ${format === 'pdf' ? 'bg-foreground text-primary-foreground' : ''}`}>PDF</button>
-            </div>
+            <span className="block text-sm font-semibold mb-1.5">Formato</span>
+            <Segmented value={format} onChange={setFormat} options={[{ value: 'csv', label: 'CSV' }, { value: 'pdf', label: 'PDF' }]} />
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">El informe contiene {filteredRecs().length} registros con los filtros actuales.</p>
-        <Button className="gap-2" onClick={handleExport}>
-          <Download className="w-4 h-4" strokeWidth={1.5} />Exportar {format.toUpperCase()}
-        </Button>
-      </div>
+        <div className="flex flex-col gap-4 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground" aria-live="polite">Con estos filtros, el informe incluye {recordCount} registros.</p>
+          <Button className="h-12 gap-2 shrink-0" onClick={handleExport}><Download className="h-4 w-4" />Descargar {format.toUpperCase()}</Button>
+        </div>
+      </Panel>
     </div>
   );
 }
