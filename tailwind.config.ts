@@ -12,7 +12,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['"Outfit"', 'system-ui', 'sans-serif'],
+        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        display: ['"Bricolage Grotesque"', '"DM Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,15 +52,32 @@ export default {
         success: {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
+          tint: "hsl(var(--success-tint))",
+          ink: "hsl(var(--success-ink))",
         },
         warning: {
           DEFAULT: "hsl(var(--warning))",
           foreground: "hsl(var(--warning-foreground))",
+          tint: "hsl(var(--warning-tint))",
+          ink: "hsl(var(--warning-ink))",
         },
         danger: {
           DEFAULT: "hsl(var(--danger))",
           foreground: "hsl(var(--danger-foreground))",
+          tint: "hsl(var(--danger-tint))",
+          ink: "hsl(var(--danger-ink))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--brand))",
+          dark: "hsl(var(--brand-dark))",
+          tint: "hsl(var(--brand-tint))",
+          ink: "hsl(var(--brand-ink))",
+        },
+        violet: {
+          tint: "hsl(var(--violet-tint))",
+          ink: "hsl(var(--violet-ink))",
+        },
+        panel: "hsl(var(--panel))",
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

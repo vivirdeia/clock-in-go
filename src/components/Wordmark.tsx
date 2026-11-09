@@ -17,8 +17,7 @@ export default function Wordmark({ size = 'md', variant = 'dark', bg, className 
       className={cn('inline-flex items-center font-display font-extrabold lowercase leading-none', variant === 'light' ? 'text-primary-foreground' : 'text-foreground', className)}
       style={{ fontSize: px, letterSpacing: '-0.03em', gap: px * 0.3 }}
     >
-      <LogoIcon variant={variant} bg={bg} className="flex-shrink-0" />
-      <style>{''}</style>
+      <LogoIcon variant={variant} bg={bg} className="flex-shrink-0" style={{ width: px * 1.1, height: px * 1.1 }} />
       clockin
     </span>
   );
