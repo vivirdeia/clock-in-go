@@ -49,6 +49,10 @@ export interface ClockRecord {
   employeeNote?: string;
   /** Motivo de la corrección administrativa. */
   reason?: string;
+  /** Admin que creó la corrección. */
+  correctedBy?: string;
+  /** Fecha de creación de la corrección (ISO). */
+  correctedAt?: string;
 }
 
 export interface Zone {

@@ -1,225 +1,167 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, KeyRound } from 'lucide-react';
-import Wordmark from "@/components/Wordmark";
+import { Mail, Lock, KeyRound, Check, Delete } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/store/AuthContext';
+import { AuthInput, AuthSplit, authH1 } from '@/components/auth/AuthKit';
+import { DialogHead } from '@/components/admin/kit';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+
+const DEMO = { email: 'admin@techcorp.es', password: 'admin123' };
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { loginAdmin, loginEmployee, recoverPassword } = useAuth();
+  const { loginAdmin, loginEmployee } = useAuth();
+  const [tab, setTab] = useState<'admin' | 'employee'>('admin');
 
-  // Admin form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [adminError, setAdminError] = useState('');
 
-  // Forgot password
   const [forgotOpen, setForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
-  const [recoveredPassword, setRecoveredPassword] = useState<string | null>(null);
-  const [forgotError, setForgotError] = useState('');
+  const [sent, setSent] = useState(false);
 
-  // Employee PIN
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
 
-  const handleRecover = (e: React.FormEvent) => {
-    e.preventDefault();
-    setForgotError('');
-    const result = recoverPassword(forgotEmail);
-    if (result.success && result.password) {
-      setRecoveredPassword(result.password);
-    } else {
-      setForgotError('No se ha encontrado ninguna cuenta con este email.');
-    }
-  };
-
-  const handleAdminLogin = (e: React.FormEvent) => {
-    e.preventDefault();
+  const doAdminLogin = (em: string, pw: string) => {
     setAdminError('');
-    const result = loginAdmin(email, password);
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      setAdminError(result.error || 'Error al iniciar sesión');
-    }
+    const result = loginAdmin(em, pw);
+    if (result.success) navigate('/dashboard');
+    else setAdminError(result.error || 'Error al iniciar sesión');
   };
 
   const handlePinDigit = (d: string) => {
-    if (pin.length >= 4) return;
+    if (pin.length >= 4 || pinError) return;
     const newPin = pin + d;
     setPin(newPin);
-    setPinError('');
     if (newPin.length === 4) {
       const result = loginEmployee(newPin);
       if (result.success) {
         localStorage.setItem('clockin_employee', result.employeeId!);
         navigate('/clock');
       } else {
-        setPinError('PIN incorrecto');
-        setTimeout(() => { setPinError(''); setPin(''); }, 800);
+        setPinError('Ese PIN no coincide, prueba otra vez');
+        setTimeout(() => { setPinError(''); setPin(''); }, 1000);
       }
     }
   };
 
+  const openForgot = () => { setForgotEmail(email); setSent(false); setForgotOpen(true); };
+  const sendLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Sin backend: se simula el envío del enlace.
+    setSent(true);
+  };
+
+  const keyCls = 'h-16 rounded-2xl bg-secondary font-display text-2xl font-bold transition-colors hover:bg-accent active:scale-95 motion-reduce:active:scale-100';
+
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <Link to="/" className="flex items-center gap-2 font-bold text-lg mb-10">
-        <Wordmark size="sm" />
-      </Link>
+    <AuthSplit
+      tone="black"
+      panel={
+        <>
+          <h1 className={authH1}>Hola de nuevo. Tu equipo ya está fichando.</h1>
+          <p className="mt-5 text-[17px] text-[#A1A1AA]">Entra para ver quién está, dónde y desde qué hora.</p>
+        </>
+      }
+    >
+      <h2 className="mb-6 font-display text-[32px] font-extrabold tracking-[-0.02em]">Iniciar sesión</h2>
 
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-6">Iniciar sesión</h1>
-
-        <Tabs defaultValue="admin" className="w-full">
-          <TabsList className="w-full mb-6">
-            <TabsTrigger value="admin" className="flex-1">Administrador</TabsTrigger>
-            <TabsTrigger value="employee" className="flex-1">Empleado</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="admin">
-            <form onSubmit={handleAdminLogin} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="admin@empresa.es"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="pl-9"
-                    required
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Contraseña</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    className="pl-9"
-                    required
-                  />
-                </div>
-              </div>
-              {adminError && <p className="text-destructive text-sm">{adminError}</p>}
-              <Button type="submit" className="w-full rounded-full">Entrar</Button>
-              <button
-                type="button"
-                className="text-sm text-muted-foreground hover:text-foreground w-full text-center"
-                onClick={() => {
-                  setForgotEmail(email);
-                  setRecoveredPassword(null);
-                  setForgotError('');
-                  setForgotOpen(true);
-                }}
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
-            </form>
-            <p className="text-xs text-muted-foreground text-center mt-6">
-              Demo: admin@techcorp.es / admin123
-            </p>
-          </TabsContent>
-
-          <TabsContent value="employee">
-            <div className="flex flex-col items-center">
-              <div className="flex items-center gap-1.5 mb-6 text-muted-foreground">
-                <KeyRound className="w-4 h-4" />
-                <span className="text-sm">Introduce tu PIN de 4 dígitos</span>
-              </div>
-              <div className={`flex gap-3 mb-6 ${pinError ? 'animate-shake' : ''}`}>
-                {[0, 1, 2, 3].map(i => (
-                  <div key={i} className={`w-4 h-4 rounded-full border-2 transition-all ${i < pin.length ? 'bg-foreground border-foreground' : 'border-border'}`} />
-                ))}
-              </div>
-              {pinError && <p className="text-destructive text-sm mb-4">{pinError}</p>}
-              <div className="grid grid-cols-3 gap-3 w-56">
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
-                  <button key={d} onClick={() => handlePinDigit(String(d))}
-                    className="w-16 h-12 rounded-lg bg-secondary text-lg font-medium hover:bg-accent transition-colors">
-                    {d}
-                  </button>
-                ))}
-                <div />
-                <button onClick={() => handlePinDigit('0')}
-                  className="w-16 h-12 rounded-lg bg-secondary text-lg font-medium hover:bg-accent transition-colors">0</button>
-                <button onClick={() => setPin(p => p.slice(0, -1))}
-                  className="w-16 h-12 rounded-lg text-muted-foreground text-sm hover:bg-accent transition-colors">⌫</button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-6">Demo: PIN 1234</p>
-            </div>
-          </TabsContent>
-        </Tabs>
-
-        <p className="text-sm text-center mt-8 text-muted-foreground">
-          ¿No tienes cuenta?{' '}
-          <Link to="/register" className="text-foreground font-medium hover:underline">Crear cuenta</Link>
-        </p>
+      <div role="tablist" className="mb-6 grid grid-cols-2 gap-1 rounded-[14px] bg-secondary p-1">
+        {([['admin', 'Administrador'], ['employee', 'Empleado']] as const).map(([k, l]) => (
+          <button
+            key={k}
+            role="tab"
+            aria-selected={tab === k}
+            onClick={() => setTab(k)}
+            className={cn('h-11 rounded-[10px] text-[15px] font-semibold transition', tab === k ? 'bg-background text-foreground shadow-card' : 'text-muted-foreground hover:text-foreground')}
+          >
+            {l}
+          </button>
+        ))}
       </div>
 
-      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Recuperar contraseña</DialogTitle>
-            <DialogDescription>
-              Modo demo: te mostramos tu contraseña en pantalla. En producción enviaríamos un email seguro.
-            </DialogDescription>
-          </DialogHeader>
+      {tab === 'admin' ? (
+        <form onSubmit={e => { e.preventDefault(); doAdminLogin(email, password); }} className="space-y-4">
+          <AuthInput label="Email" icon={Mail} type="email" placeholder="tu@empresa.es" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+          <AuthInput label="Contraseña" icon={Lock} type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="current-password" />
+          {adminError && <p role="alert" className="text-sm font-medium text-danger-ink">{adminError}</p>}
+          <Button type="submit" className="h-[52px] w-full text-[15px]">Entrar</Button>
+          <Button type="button" variant="outline" className="h-[52px] w-full text-[15px]" onClick={() => doAdminLogin(DEMO.email, DEMO.password)}>
+            Entrar con la cuenta demo
+          </Button>
+          <button type="button" onClick={openForgot} className="block w-full py-2 text-center text-sm font-medium text-muted-foreground hover:text-foreground">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </form>
+      ) : (
+        <div className="flex flex-col items-center">
+          <p className="mb-5 text-[15px] text-muted-foreground">Introduce tu PIN de 4 cifras</p>
+          <div className={cn('mb-4 flex gap-3', pinError && 'animate-shake')}>
+            {[0, 1, 2, 3].map(i => (
+              <div
+                key={i}
+                className={cn(
+                  'flex h-14 w-12 items-center justify-center rounded-[14px] border-2 font-display text-2xl font-bold',
+                  pinError ? 'border-danger text-danger' : i < pin.length ? 'border-foreground' : 'border-border',
+                )}
+              >
+                {i < pin.length ? '•' : ''}
+              </div>
+            ))}
+          </div>
+          <div className="mb-4 h-6">
+            {pinError && <p role="alert" className="text-sm font-semibold text-danger-ink">{pinError}</p>}
+          </div>
+          <div className="grid w-full max-w-[300px] grid-cols-3 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
+              <button key={d} onClick={() => handlePinDigit(String(d))} className={keyCls}>{d}</button>
+            ))}
+            <div />
+            <button onClick={() => handlePinDigit('0')} className={keyCls}>0</button>
+            <button onClick={() => setPin(p => p.slice(0, -1))} aria-label="Borrar" className="flex h-16 items-center justify-center rounded-2xl text-muted-foreground hover:bg-secondary">
+              <Delete className="h-6 w-6" />
+            </button>
+          </div>
+        </div>
+      )}
 
-          {recoveredPassword ? (
-            <div className="space-y-3">
-              <p className="text-sm">Tu contraseña es:</p>
-              <div className="rounded-md border bg-muted px-3 py-2 font-mono text-center text-lg">
-                {recoveredPassword}
-              </div>
-              <DialogFooter>
-                <Button className="w-full rounded-full" onClick={() => {
-                  setPassword(recoveredPassword);
-                  setEmail(forgotEmail);
-                  setForgotOpen(false);
-                  toast.success('Contraseña rellenada. Pulsa Entrar.');
-                }}>
-                  Usar y cerrar
-                </Button>
-              </DialogFooter>
-            </div>
-          ) : (
-            <form onSubmit={handleRecover} className="space-y-3">
-              <div>
-                <label className="text-sm font-medium mb-1.5 block">Email</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="email"
-                    placeholder="admin@empresa.es"
-                    value={forgotEmail}
-                    onChange={e => setForgotEmail(e.target.value)}
-                    className="pl-9"
-                    required
-                  />
-                </div>
-              </div>
-              {forgotError && <p className="text-destructive text-sm">{forgotError}</p>}
-              <DialogFooter>
-                <Button type="submit" className="w-full rounded-full">Recuperar</Button>
-              </DialogFooter>
+      <p className="mt-8 text-center text-sm text-muted-foreground">
+        ¿Aún no tienes cuenta?{' '}
+        <Link to="/register" className="font-semibold text-foreground hover:underline">Créala gratis</Link>
+      </p>
+
+      <Dialog open={forgotOpen} onOpenChange={setForgotOpen}>
+        <DialogContent className="max-w-[560px] space-y-5">
+          {!sent ? (
+            <form onSubmit={sendLink} className="space-y-5">
+              <DialogHead icon={KeyRound} tint="blue" title="Recupera tu acceso" />
+              <p className="text-[15px] text-muted-foreground">Escribe tu email y te enviamos un enlace para crear una contraseña nueva.</p>
+              <AuthInput label="Email" icon={Mail} type="email" placeholder="tu@empresa.es" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} required />
+              <Button type="submit" className="h-[52px] w-full">Enviar enlace</Button>
+              <button type="button" onClick={() => setForgotOpen(false)} className="block w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground">
+                Volver a iniciar sesión
+              </button>
             </form>
+          ) : (
+            <div className="space-y-5 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-tint text-success-ink">
+                <Check className="h-8 w-8" />
+              </div>
+              <DialogTitle className="font-display text-2xl font-extrabold">Revisa tu correo</DialogTitle>
+              <p className="text-[15px] text-muted-foreground">Hemos enviado el enlace a <strong className="text-foreground">{forgotEmail}</strong>. Caduca en 30 minutos.</p>
+              <Button className="h-[52px] w-full" onClick={() => setForgotOpen(false)}>Volver a iniciar sesión</Button>
+              <button type="button" onClick={() => toast.success('Te hemos reenviado el enlace')} className="block w-full text-center text-sm font-medium text-muted-foreground hover:text-foreground">
+                ¿No te ha llegado? Reenviar
+              </button>
+            </div>
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </AuthSplit>
   );
 }

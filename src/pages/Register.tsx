@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Building2, FileText } from 'lucide-react';
-import Wordmark from "@/components/Wordmark";
+import { User, Mail, Lock, Building2, FileText, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useAuth } from '@/store/AuthContext';
+import { AuthInput, AuthSplit, authH1 } from '@/components/auth/AuthKit';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -20,62 +19,47 @@ export default function RegisterPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres');
-      return;
-    }
+    if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return; }
     const result = register({ name, email, password, company, cif: cif || undefined });
-    if (result.success) {
-      navigate('/select-plan');
-    } else {
-      setError(result.error || 'Error al registrar');
-    }
+    if (result.success) navigate('/select-plan');
+    else setError(result.error || 'Error al registrar');
   };
 
-  const fields = [
-    { icon: User, label: 'Nombre completo', value: name, set: setName, type: 'text', placeholder: 'Juan García', required: true },
-    { icon: Mail, label: 'Email', value: email, set: setEmail, type: 'email', placeholder: 'juan@empresa.es', required: true },
-    { icon: Lock, label: 'Contraseña', value: password, set: setPassword, type: 'password', placeholder: '••••••••', required: true },
-    { icon: Building2, label: 'Nombre de empresa', value: company, set: setCompany, type: 'text', placeholder: 'Mi Empresa SL', required: true },
-    { icon: FileText, label: 'CIF (opcional)', value: cif, set: setCif, type: 'text', placeholder: 'B12345678', required: false },
-  ];
-
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-      <Link to="/" className="flex items-center gap-2 font-bold text-lg mb-10">
-        <Wordmark size="sm" />
-      </Link>
-
-      <div className="w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-center mb-2">Crear cuenta</h1>
-        <p className="text-muted-foreground text-sm text-center mb-8">Empieza gratis. Sin tarjeta de crédito.</p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {fields.map(f => (
-            <div key={f.label}>
-              <label className="text-sm font-medium mb-1.5 block">{f.label}</label>
-              <div className="relative">
-                <f.icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type={f.type}
-                  placeholder={f.placeholder}
-                  value={f.value}
-                  onChange={e => f.set(e.target.value)}
-                  className="pl-9"
-                  required={f.required}
-                />
-              </div>
-            </div>
-          ))}
-          {error && <p className="text-destructive text-sm">{error}</p>}
-          <Button type="submit" className="w-full rounded-full">Crear cuenta</Button>
-        </form>
-
-        <p className="text-sm text-center mt-6 text-muted-foreground">
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-foreground font-medium hover:underline">Iniciar sesión</Link>
-        </p>
-      </div>
-    </div>
+    <AuthSplit
+      tone="blue"
+      maxW={420}
+      panel={
+        <>
+          <h1 className={authH1}>En 10 minutos, tu equipo ficha desde el móvil.</h1>
+          <ul className="mt-6 space-y-3">
+            {['Gratis hasta 5 empleados', 'Sin tarjeta y sin permanencia', 'Sin aparatos ni instalaciones'].map(t => (
+              <li key={t} className="flex items-center gap-3 text-base font-medium">
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-foreground/15"><Check className="h-4 w-4" /></span>
+                {t}
+              </li>
+            ))}
+          </ul>
+        </>
+      }
+    >
+      <h2 className="font-display text-[32px] font-extrabold tracking-[-0.02em]">Crear cuenta</h2>
+      <p className="mb-6 mt-1 text-[15px] text-muted-foreground">Empieza gratis hoy mismo.</p>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <AuthInput label="Nombre completo" icon={User} placeholder="Juan García" value={name} onChange={e => setName(e.target.value)} required autoComplete="name" />
+        <AuthInput label="Email" icon={Mail} type="email" placeholder="juan@empresa.es" value={email} onChange={e => setEmail(e.target.value)} required autoComplete="email" />
+        <AuthInput label="Contraseña" icon={Lock} type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} required autoComplete="new-password" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <AuthInput label="Empresa" icon={Building2} placeholder="Mi Empresa SL" value={company} onChange={e => setCompany(e.target.value)} required />
+          <AuthInput label={<>CIF <span className="font-normal text-muted-foreground">(opcional)</span></>} id="f-cif" icon={FileText} placeholder="B12345678" value={cif} onChange={e => setCif(e.target.value)} />
+        </div>
+        {error && <p role="alert" className="text-sm font-medium text-danger-ink">{error}</p>}
+        <Button type="submit" className="h-[52px] w-full text-[15px]">Crear cuenta</Button>
+      </form>
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        ¿Ya tienes cuenta?{' '}
+        <Link to="/login" className="font-semibold text-foreground hover:underline">Inicia sesión</Link>
+      </p>
+    </AuthSplit>
   );
 }
